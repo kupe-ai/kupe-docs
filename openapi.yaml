@@ -32,7 +32,7 @@ paths:
       - lang: typescript
         label: TypeScript
         source: |-
-          import { Kupe } from "@kupeai/sdk";
+          import { Kupe } from "kupe-sdk";
 
           const kupe = new Kupe(); // KUPE_API_KEY
           const me = await kupe.me();
@@ -3435,7 +3435,7 @@ paths:
           \       if event.type == \"response.output_audio_transcript.done\":\n            print(event.transcript)"
       - lang: typescript
         label: TypeScript
-        source: "import { Kupe } from \"@kupeai/sdk\";\n\nconst kupe = new Kupe();\nconst session = await\
+        source: "import { Kupe } from \"kupe-sdk\";\n\nconst kupe = new Kupe();\nconst session = await\
           \ kupe.realtime.sessions.create({\n  agent_id: \"agt_...\",\n  voice: \"priya\",\n});\nconst\
           \ rt = await kupe.realtime.connect(session);"
       - lang: bash

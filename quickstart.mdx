@@ -36,7 +36,7 @@ pip install kupe
 ```
 
 ```bash TypeScript
-npm i @kupeai/sdk
+npm i kupe-sdk
 ```
 
 ```bash cURL
@@ -65,7 +65,7 @@ with client.realtime.connect(session) as rt:
 ```
 
 ```typescript TypeScript
-import { Kupe } from "@kupeai/sdk";
+import { Kupe } from "kupe-sdk";
 
 const kupe = new Kupe();
 const session = await kupe.realtime.sessions.create({
@@ -111,7 +111,7 @@ for agent in page.items:
 ```
 
 ```typescript TypeScript
-import { Kupe } from "@kupeai/sdk";
+import { Kupe } from "kupe-sdk";
 
 const kupe = new Kupe();
 const me = await kupe.me();
