@@ -3,9 +3,11 @@ title: MCP
 description: Install the Kupe MCP server in Cursor, Claude Code, or Codex.
 ---
 
-Kupe exposes the same `/v1` API as MCP tools at **`https://mcp.kupe.in/mcp`**. Every tool call sends your key — nothing is stored on the MCP host.
+Kupe exposes the same `/v1` API as MCP tools at **`http://mcp.kupe.in/mcp`**. Every tool call sends your key — nothing is stored on the MCP host.
 
 Use a project API key (`sk-kupe-...`). HTTP 401 if the `Authorization` header is missing.
+
+Opening the URL in a browser returns **Not Acceptable** — this is streamable MCP (`Accept: text/event-stream`), not a web page. Use Cursor, Claude Code, Codex, or another MCP client.
 
 ## Remote (recommended)
 
@@ -15,7 +17,7 @@ No local Python. Point the client at the hosted server:
 {
   "mcpServers": {
     "kupe": {
-      "url": "https://mcp.kupe.in/mcp",
+      "url": "http://mcp.kupe.in/mcp",
       "headers": {
         "Authorization": "Bearer sk-kupe-YOUR_KEY"
       }
@@ -37,7 +39,7 @@ Project-level: `.cursor/mcp.json` in the repo with the same `mcpServers` object.
 ## Claude Code
 
 ```bash
-claude mcp add --transport http kupe https://mcp.kupe.in/mcp \
+claude mcp add --transport http kupe http://mcp.kupe.in/mcp \
   --header "Authorization: Bearer sk-kupe-YOUR_KEY"
 ```
 
@@ -51,7 +53,7 @@ Add the same remote block to your Codex MCP config (`mcp.json`):
 {
   "mcpServers": {
     "kupe": {
-      "url": "https://mcp.kupe.in/mcp",
+      "url": "http://mcp.kupe.in/mcp",
       "headers": {
         "Authorization": "Bearer sk-kupe-YOUR_KEY"
       }
