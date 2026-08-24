@@ -46,7 +46,7 @@
   "navbar": {
     "links": [
       {
-        "label": "Dashboard",
+        "label": "Console",
         "href": "https://hub.kupe.in"
       }
     ],
