@@ -249,12 +249,27 @@
   flex-shrink: 0;
   width: 28px;
   height: 28px;
-  color: var(--kupe-hero);
   margin-top: 0.1rem;
+  /* SVG fills are black; invert in dark mode so marks stay visible. */
+  color: #0a0a0a;
+  filter: none;
+  opacity: 0.92;
 }
 
 .dark .kupe-brand-logo {
-  color: #e8e9ff;
+  color: #f4f4f5;
+  filter: invert(1);
+  opacity: 0.95;
+}
+
+/* Prefer prefers-color-scheme when Mintlify uses data-theme / html class variants */
+html.light .kupe-brand-logo,
+:root:not(.dark) .kupe-brand-logo {
+  filter: none;
+}
+
+html.dark .kupe-brand-logo {
+  filter: invert(1);
 }
 
 .kupe-brand-card strong {
