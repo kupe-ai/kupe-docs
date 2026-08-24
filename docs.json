@@ -86,7 +86,7 @@
         "groups": [
           {
             "group": "Get started",
-            "icon": "sparkles",
+            "icon": "rocket",
             "pages": [
               "index",
               "quickstart",

@@ -1,40 +1,33 @@
 ---
 title: Kupe MCP
 description: Drive agents, campaigns, phones, and voices from Cursor, Claude Code, or Codex.
-mode: wide
 ---
 
-<div class="kupe-hero">
-  <div class="kupe-matrix" aria-hidden="true"></div>
-  <div class="kupe-hero-copy">
-    <div class="kupe-kicker">Coding agents</div>
-    <h1>Kupe MCP</h1>
-    <p>
-      One API key. One remote URL. Your coding agent can create agents, launch
-      campaigns, buy numbers, read transcripts, and check wallet balance —
-      without leaving the IDE.
-    </p>
+One API key. One remote URL. Your coding agent can create agents, launch campaigns, buy numbers, read transcripts, and check wallet balance — without leaving the IDE.
+
+<div class="kupe-brand-row">
+  <div class="kupe-brand-card">
+    <img src="/images/brands/cursor.svg" alt="" class="kupe-brand-logo" width="28" height="28" />
+    <div>
+      <strong>Cursor</strong>
+      <p>Paste the remote JSON into Settings → MCP. Tools appear under <code>kupe</code>.</p>
+    </div>
+  </div>
+  <div class="kupe-brand-card">
+    <img src="/images/brands/claude.svg" alt="" class="kupe-brand-logo" width="28" height="28" />
+    <div>
+      <strong>Claude Code</strong>
+      <p>One <code>claude mcp add</code> command with your Bearer key.</p>
+    </div>
+  </div>
+  <div class="kupe-brand-card">
+    <img src="/images/brands/codex.svg" alt="" class="kupe-brand-logo" width="28" height="28" />
+    <div>
+      <strong>Codex</strong>
+      <p>Drop the same URL + header into <code>~/.codex/config.toml</code>.</p>
+    </div>
   </div>
 </div>
-
-<Warning>
-  **`https://docs.kupe.in/mcp` is not this page.** Mintlify reserves `/mcp` for
-  its own docs-search MCP (raw JSON in the browser). The **Kupe platform** MCP
-  lives at **`http://mcp.kupe.in/mcp`**. This guide is at
-  [`/kupe-mcp`](/kupe-mcp).
-</Warning>
-
-<CardGroup cols={3}>
-  <Card title="Cursor" icon="sparkles">
-    Paste the remote JSON into Settings → MCP. Tools appear under `kupe`.
-  </Card>
-  <Card title="Claude Code" icon="terminal">
-    One `claude mcp add` command with your Bearer key.
-  </Card>
-  <Card title="Codex" icon="bot">
-    Drop the same URL + header into `~/.codex/config.toml`.
-  </Card>
-</CardGroup>
 
 ## Endpoint
 
@@ -44,9 +37,13 @@ mode: wide
 | **Auth** | `Authorization: Bearer sk-kupe-...` |
 | **Transport** | Streamable HTTP (`Accept: text/event-stream`) |
 
-Opening that URL in Safari or Chrome returns **Not Acceptable** — that is expected. It is an MCP wire protocol, not a website. Use an MCP client.
+Opening that URL in a browser returns **Not Acceptable** — that is expected. It is an MCP wire protocol, not a website. Use Cursor, Claude Code, Codex, or another MCP client.
 
 Every tool call forwards your Bearer token to `https://x.kupe.in`. Nothing is stored on the MCP host. Missing header → **401**.
+
+<Note>
+  Use **`http://mcp.kupe.in/mcp`** for the Kupe platform. The path `https://docs.kupe.in/mcp` is a separate docs-search endpoint (JSON in the browser) — not this install guide.
+</Note>
 
 ## Install in 30 seconds
 
@@ -111,7 +108,7 @@ Or from a clone: `python -m app.server --mcp` with `KUPE_API_KEY` set.
 ## What the agent can do
 
 <CardGroup cols={2}>
-  <Card title="Agents" icon="robot">
+  <Card title="Agents" icon="bot">
     Create, update, commit, archive, attach tools and analyses, run text tests.
   </Card>
   <Card title="Campaigns" icon="megaphone">
@@ -131,7 +128,7 @@ Or from a clone: `python -m app.server --mcp` with `KUPE_API_KEY` set.
   </Card>
 </CardGroup>
 
-Also: knowledge bases, call databases, org tools, and Composio connections. Full map: [kupe-mcp tool reference](https://github.com/kupe-ai/kupe-mcp/blob/main/docs/TOOLS.md).
+Also: knowledge bases, call databases, org tools, and Composio connections.
 
 ## Safety
 
@@ -144,10 +141,6 @@ Also: knowledge bases, call databases, org tools, and Composio connections. Full
     Phone **buy**, phone **delete**, and cloned-voice **delete** require
     `confirm=true`. The model must not invent that flag — your agent should
     ask you first.
-  </Accordion>
-  <Accordion title="Two different MCPs">
-    - **`http://mcp.kupe.in/mcp`** — Kupe platform (this page).
-    - **`https://docs.kupe.in/mcp`** — Mintlify docs search only (read-only site content).
   </Accordion>
 </AccordionGroup>
 
