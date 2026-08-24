@@ -129,14 +129,9 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Dashboard",
+          "anchor": "Console",
           "href": "https://hub.kupe.in",
           "icon": "layout-dashboard"
-        },
-        {
-          "anchor": "API",
-          "href": "https://x.kupe.in",
-          "icon": "globe"
         }
       ]
     }
