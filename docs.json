@@ -116,7 +116,7 @@
           {
             "group": "MCP",
             "icon": "bot",
-            "pages": ["mcp"]
+            "pages": ["kupe-mcp"]
           }
         ]
       },

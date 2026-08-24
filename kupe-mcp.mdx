@@ -1,0 +1,169 @@
+---
+title: Kupe MCP
+description: Drive agents, campaigns, phones, and voices from Cursor, Claude Code, or Codex.
+mode: wide
+---
+
+<div class="kupe-hero">
+  <div class="kupe-matrix" aria-hidden="true"></div>
+  <div class="kupe-hero-copy">
+    <div class="kupe-kicker">Coding agents</div>
+    <h1>Kupe MCP</h1>
+    <p>
+      One API key. One remote URL. Your coding agent can create agents, launch
+      campaigns, buy numbers, read transcripts, and check wallet balance —
+      without leaving the IDE.
+    </p>
+  </div>
+</div>
+
+<Warning>
+  **`https://docs.kupe.in/mcp` is not this page.** Mintlify reserves `/mcp` for
+  its own docs-search MCP (raw JSON in the browser). The **Kupe platform** MCP
+  lives at **`http://mcp.kupe.in/mcp`**. This guide is at
+  [`/kupe-mcp`](/kupe-mcp).
+</Warning>
+
+<CardGroup cols={3}>
+  <Card title="Cursor" icon="sparkles">
+    Paste the remote JSON into Settings → MCP. Tools appear under `kupe`.
+  </Card>
+  <Card title="Claude Code" icon="terminal">
+    One `claude mcp add` command with your Bearer key.
+  </Card>
+  <Card title="Codex" icon="bot">
+    Drop the same URL + header into `~/.codex/config.toml`.
+  </Card>
+</CardGroup>
+
+## Endpoint
+
+| | |
+| --- | --- |
+| **URL** | `http://mcp.kupe.in/mcp` |
+| **Auth** | `Authorization: Bearer sk-kupe-...` |
+| **Transport** | Streamable HTTP (`Accept: text/event-stream`) |
+
+Opening that URL in Safari or Chrome returns **Not Acceptable** — that is expected. It is an MCP wire protocol, not a website. Use an MCP client.
+
+Every tool call forwards your Bearer token to `https://x.kupe.in`. Nothing is stored on the MCP host. Missing header → **401**.
+
+## Install in 30 seconds
+
+Copy from **Deploy with code → Install Kupe MCP** in the [console](https://hub.kupe.in) to inject your live key, or paste the templates below.
+
+<Tabs>
+  <Tab title="Cursor">
+    Add to `~/.cursor/mcp.json` or project `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "kupe": {
+      "url": "http://mcp.kupe.in/mcp",
+      "headers": {
+        "Authorization": "Bearer sk-kupe-YOUR_KEY"
+      }
+    }
+  }
+}
+```
+
+Then open **Cursor Settings → MCP**, confirm `kupe` is connected, and restart if needed.
+  </Tab>
+  <Tab title="Claude Code">
+```bash
+claude mcp add --transport http kupe http://mcp.kupe.in/mcp \
+  --header "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+Confirm with `claude mcp list`.
+  </Tab>
+  <Tab title="Codex">
+```toml
+[mcp_servers.kupe]
+url = "http://mcp.kupe.in/mcp"
+[mcp_servers.kupe.http_headers]
+Authorization = "Bearer sk-kupe-YOUR_KEY"
+```
+  </Tab>
+  <Tab title="Stdio (local)">
+    When you cannot reach the hosted URL:
+
+```json
+{
+  "mcpServers": {
+    "kupe": {
+      "command": "uvx",
+      "args": ["kupe-mcp"],
+      "env": {
+        "KUPE_API_KEY": "sk-kupe-YOUR_KEY"
+      }
+    }
+  }
+}
+```
+
+Or from a clone: `python -m app.server --mcp` with `KUPE_API_KEY` set.
+  </Tab>
+</Tabs>
+
+## What the agent can do
+
+<CardGroup cols={2}>
+  <Card title="Agents" icon="robot">
+    Create, update, commit, archive, attach tools and analyses, run text tests.
+  </Card>
+  <Card title="Campaigns" icon="megaphone">
+    Recipient lists, batches, CSV sandbox import, start / pause / resume / cancel.
+  </Card>
+  <Card title="Calls" icon="phone">
+    Single outbound dial, inbound deployments, transcripts, recordings, analysis.
+  </Card>
+  <Card title="Phones" icon="smartphone">
+    Search numbers; **buy** and **delete** require `confirm=true` (billed / irreversible).
+  </Card>
+  <Card title="Voices" icon="audio-lines">
+    List catalog + clones; clone and delete are JWT-oriented — prefer the console.
+  </Card>
+  <Card title="Billing & logs" icon="wallet">
+    Wallet, invoices, usage cost-summary / daily, sessions, tool-call events.
+  </Card>
+</CardGroup>
+
+Also: knowledge bases, call databases, org tools, and Composio connections. Full map: [kupe-mcp tool reference](https://github.com/kupe-ai/kupe-mcp/blob/main/docs/TOOLS.md).
+
+## Safety
+
+<AccordionGroup>
+  <Accordion title="Never commit the API key">
+    Treat `sk-kupe-...` like a password. Clipboard copy in the console warns you.
+    Prefer project-scoped keys you can revoke.
+  </Accordion>
+  <Accordion title="Confirm-gated tools">
+    Phone **buy**, phone **delete**, and cloned-voice **delete** require
+    `confirm=true`. The model must not invent that flag — your agent should
+    ask you first.
+  </Accordion>
+  <Accordion title="Two different MCPs">
+    - **`http://mcp.kupe.in/mcp`** — Kupe platform (this page).
+    - **`https://docs.kupe.in/mcp`** — Mintlify docs search only (read-only site content).
+  </Accordion>
+</AccordionGroup>
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Same key works with `pip install kupe` and `@kupe/sdk`.
+  </Card>
+  <Card title="API playground" icon="terminal" href="/playground">
+    Try REST endpoints interactively against `https://x.kupe.in`.
+  </Card>
+  <Card title="Open console" icon="layout-dashboard" href="https://hub.kupe.in">
+    Generate a key and copy MCP install from Deploy with code.
+  </Card>
+  <Card title="kupe-mcp on GitHub" icon="github" href="https://github.com/kupe-ai/kupe-mcp">
+    Source, tool list, and self-host instructions.
+  </Card>
+</CardGroup>
