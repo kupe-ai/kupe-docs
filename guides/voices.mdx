@@ -1,0 +1,73 @@
+---
+title: Voices
+description: Catalog voices, clones, preview audio, and billed speak.
+---
+
+Voices are addressed by **sanitized name** on realtime sessions (`priya`, not a vendor UUID). `GET /v1/voices` returns catalog rows, public clones, and — when you send a user JWT — your private clones.
+
+`GET /v1/providers` lists STT, LLM, and TTS catalogs (including `defaults`). Brand names are Kupe-facing (`kupe` rather than the upstream vendor).
+
+## List
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+voices = client.voices.list(provider="kupe")
+for v in voices.items:
+    print(v["id"], v.get("name"))
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const voices = await kupe.voices.list({ provider: "kupe" });
+```
+
+```bash cURL
+curl "https://x.kupe.in/v1/voices?provider=kupe" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl https://x.kupe.in/v1/providers
+```
+
+</CodeGroup>
+
+Query `provider` (brand name) or `provider_id` (catalog UUID). Omit both to list every enabled TTS catalog.
+
+## Preview and speak
+
+- `GET /v1/voices/{voice_id}/preview` — cached English+Hindi sample (audio body).
+- `POST /v1/voices/{voice_id}/speak` — billed TTS for playground text. JSON `{ "text", "org_id", "language?", "speed?", "pitch?" }`. Max 2000 characters. **JWT required.** Audio is not stored.
+
+## Clone, patch, delete
+
+These are **JWT-only**. API keys cannot own a voice (`403`). SDKs still expose the methods and raise a typed error if you call them with a key.
+
+- `POST /v1/voices/clone` — `multipart/form-data`: `name`, `sample` (≤ 25 MB), optional `is_public`
+- `PATCH /v1/voices/{voice_id}` — rename or visibility
+- `GET /v1/voices/{voice_id}/usage` — how many live agents still reference this clone
+- `DELETE /v1/voices/{voice_id}` — optional `fallback_voice_id` for agents that still use it
+
+<CodeGroup>
+
+```python Python
+# Dashboard / JWT session only
+client.voices.clone(name="Priya desk", sample=open("clip.wav", "rb"))
+```
+
+```typescript TypeScript
+await kupe.voices.clone({ name: "Priya desk", sample: file });
+```
+
+```bash cURL
+curl -X POST https://x.kupe.in/v1/voices/clone \
+  -H "Authorization: Bearer $SUPABASE_JWT" \
+  -F name="Priya desk" \
+  -F sample=@clip.wav
+```
+
+</CodeGroup>

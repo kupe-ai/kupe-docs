@@ -1,0 +1,86 @@
+---
+title: Tools and Composio
+description: Webhook, MCP, and Composio tools — catalog, connect, attach to agents.
+---
+
+Tools live on the **org**. Attach the ones an agent may call. Kinds: `custom_webhook`, `composio`, `mcp`.
+
+## Catalog
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+org_id = client.me().org_id
+tool = client.tools.create(
+    org_id,
+    name="lookup_loan",
+    description="Fetch EMI status by account id",
+    kind="custom_webhook",
+    http_url="https://example.com/emi",
+    http_method="POST",
+    parameters={"type": "object", "properties": {"account_id": {"type": "string"}}},
+    required=["account_id"],
+)
+client.agents.tools.attach("agt_...", tool_id=tool.id)
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const orgId = (await kupe.me()).org_id!;
+const tool = await kupe.tools.create(orgId, {
+  name: "lookup_loan",
+  description: "Fetch EMI status by account id",
+  kind: "custom_webhook",
+  http_url: "https://example.com/emi",
+  http_method: "POST",
+  parameters: { type: "object", properties: { account_id: { type: "string" } } },
+  required: ["account_id"],
+});
+await kupe.agents.tools.attach("agt_...", { tool_id: tool.id });
+```
+
+```bash cURL
+curl -X POST https://x.kupe.in/v1/orgs/org_.../tools \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"lookup_loan","description":"Fetch EMI status",
+    "kind":"custom_webhook","http_url":"https://example.com/emi",
+    "http_method":"POST",
+    "parameters":{"type":"object","properties":{"account_id":{"type":"string"}}},
+    "required":["account_id"]
+  }'
+
+curl -X POST https://x.kupe.in/v1/agents/agt_.../tools \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"tool_id":"tool_..."}'
+```
+
+</CodeGroup>
+
+MCP tools: set `kind: "mcp"`, `http_url` to the MCP endpoint, `mcp_tool_name` to the remote tool name, and put auth in `http_headers`.
+
+Archive with `POST /v1/tools/{tool_id}/archive`. Detach with `DELETE /v1/agents/{agent_id}/tools/{tool_id}`.
+
+## Composio
+
+Browse toolkits, connect an account, then materialize one action as an org tool.
+
+| Step | Path |
+| --- | --- |
+| List apps | `GET /v1/orgs/{org_id}/composio/toolkits` |
+| List actions | `GET /v1/orgs/{org_id}/composio/toolkits/{slug}/tools` |
+| Connect | `POST /v1/orgs/{org_id}/composio/connections` |
+| List connections | `GET /v1/orgs/{org_id}/composio/connections` |
+| Refresh / disconnect | `POST /v1/composio/connections/{id}/refresh`, `DELETE ...` |
+| Attach as tool | `POST /v1/orgs/{org_id}/composio/tools` (`toolkit_slug`, `tool_slug`, `connection_id`) |
+
+Then attach that `tool_id` to the agent the same way as a webhook tool.
+
+During a [Realtime](/realtime) call, function calls arrive as `response.function_call_arguments.done`. Server-side tools (webhooks, Composio, MCP) run on Kupe; client-executed tools expect a `function_call_output` item back on the socket.

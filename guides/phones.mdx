@@ -1,0 +1,82 @@
+---
+title: Phones
+description: Search, buy, and release numbers. India KYC when required.
+---
+
+Phone numbers live as **telephony accounts**. You can attach your own Twilio / Plivo / Exotel credentials (BYOK) or purchase a Kupe-managed Plivo number.
+
+Buying and deleting are billed or hard to undo. MCP tools that wrap these routes require `confirm=true`.
+
+## Search and buy (Plivo)
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+org_id = client.me().org_id
+hits = client.phones.search(org_id, country_iso="IN", pattern="80")
+# India: complete KYC before purchase when requires_compliance is true
+account = client.phones.buy(org_id, number=hits.numbers[0].number)
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const orgId = (await kupe.me()).org_id!;
+const hits = await kupe.phones.search(orgId, { country_iso: "IN", pattern: "80" });
+const account = await kupe.phones.buy(orgId, { number: hits.numbers[0].number });
+```
+
+```bash cURL
+curl "https://x.kupe.in/v1/orgs/org_.../plivo/numbers/search?country_iso=IN&pattern=80" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl -X POST https://x.kupe.in/v1/orgs/org_.../plivo/numbers/purchase \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"number":"+9180..."}'
+```
+
+</CodeGroup>
+
+`country_iso` is `US` or `IN`. India pattern is digits after country code (`80` Bengaluru, `22` Mumbai). US numbers can be purchased immediately; IN numbers need an **accepted** compliance application first:
+
+- `GET /v1/orgs/{org_id}/plivo/compliance/requirements`
+- `GET /v1/orgs/{org_id}/plivo/compliance`
+- `POST /v1/orgs/{org_id}/plivo/compliance`
+- `POST /v1/orgs/{org_id}/plivo/compliance/refresh`
+
+## List and release
+
+<CodeGroup>
+
+```python Python
+accounts = client.phones.list(org_id)
+client.phones.delete(accounts[0].id)  # releases a Kupe-managed Plivo number
+```
+
+```typescript TypeScript
+const accounts = await kupe.phones.list(orgId);
+await kupe.phones.delete(accounts[0].id);
+```
+
+```bash cURL
+curl https://x.kupe.in/v1/orgs/org_.../telephony-accounts \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl -X DELETE https://x.kupe.in/v1/telephony-accounts/tel_... \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+`DELETE /v1/telephony-accounts/{account_id}` is the only delete path: Kupe-managed numbers are un-rented at Plivo, then the row is removed. BYOK rows are deleted locally only.
+
+## BYOK
+
+`POST /v1/orgs/{org_id}/telephony-accounts` with `provider` (`twilio` | `plivo` | `exotel`), `account_sid`, `api_key`, and `from_number`.
+
+Requires `feature_phone_numbers`. Rate limits: `GET/POST /v1/rate-limit-configs`.

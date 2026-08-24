@@ -1,0 +1,223 @@
+/* Satoshi — same Fontshare files as kupe-frontend (self-hosted here). */
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --kupe-hero: #4048ff;
+  --kupe-hero-deep: #010799;
+  --kupe-hero-soft: #7077fb;
+  --kupe-hero-from: #a8abff;
+  --kupe-matrix-on: linear-gradient(135deg, #a8abff 0%, #4048ff 48%, #010799 100%);
+}
+
+/* Homepage + quickstart hero: CSS dot-matrix (inspired by kupe-frontend matrix.tsx). */
+.kupe-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  padding: 2.75rem 1.75rem 2.25rem;
+  margin: 0 0 2.25rem;
+  border: 1px solid color-mix(in srgb, var(--kupe-hero) 16%, transparent);
+  background:
+    radial-gradient(1200px 420px at 12% -20%, color-mix(in srgb, var(--kupe-hero) 18%, transparent), transparent 55%),
+    radial-gradient(900px 380px at 100% 120%, color-mix(in srgb, var(--kupe-hero-deep) 22%, transparent), transparent 50%);
+}
+
+.dark .kupe-hero {
+  border-color: color-mix(in srgb, var(--kupe-hero-soft) 22%, transparent);
+  background:
+    radial-gradient(1200px 420px at 12% -20%, color-mix(in srgb, var(--kupe-hero) 28%, transparent), transparent 55%),
+    radial-gradient(900px 380px at 100% 120%, color-mix(in srgb, var(--kupe-hero-deep) 40%, transparent), transparent 50%),
+    #0e0e0e;
+}
+
+.kupe-matrix {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Off-cell grid — muted dots, always visible. */
+.kupe-matrix::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--kupe-hero-soft) 28%, transparent) 1.15px,
+    transparent 1.35px
+  );
+  background-size: 14px 14px;
+  opacity: 0.45;
+}
+
+.dark .kupe-matrix::before {
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--kupe-hero-from) 40%, transparent) 1.15px,
+    transparent 1.35px
+  );
+  opacity: 0.28;
+}
+
+/* Lit pixels — gradient “on” cells with a soft glow, like matrix.tsx. */
+.kupe-matrix::after {
+  content: "";
+  position: absolute;
+  top: 28px;
+  right: 36px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--kupe-matrix-on);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--kupe-hero) 55%, transparent),
+    14px 0 0 0 #4048ff,
+    28px 0 0 0 #7077fb,
+    42px 14px 0 0 #4048ff,
+    0 14px 0 0 #010799,
+    14px 14px 0 0 #4048ff,
+    28px 14px 0 0 #a8abff,
+    42px 0 0 0 #010799,
+    56px 14px 0 0 #4048ff,
+    0 28px 0 0 #7077fb,
+    14px 28px 0 0 #4048ff,
+    28px 28px 0 0 #010799,
+    42px 28px 0 0 #4048ff,
+    56px 28px 0 0 #a8abff,
+    70px 14px 0 0 #7077fb,
+    70px 28px 0 0 #4048ff,
+    14px 42px 0 0 #a8abff,
+    28px 42px 0 0 #4048ff,
+    42px 42px 0 0 #7077fb,
+    56px 42px 0 0 #010799,
+    0 42px 0 0 #4048ff,
+    70px 42px 0 0 #4048ff,
+    -84px 56px 0 0 #7077fb,
+    -70px 70px 0 0 #4048ff,
+    -56px 56px 0 0 #010799,
+    -42px 70px 0 0 #a8abff,
+    -28px 56px 0 0 #4048ff,
+    -98px 84px 0 0 #7077fb,
+    -84px 98px 0 0 #4048ff,
+    -120px 42px 0 0 #010799,
+    -134px 56px 0 0 #4048ff,
+    84px 56px 0 0 #4048ff,
+    98px 70px 0 0 #7077fb,
+    112px 56px 0 0 #a8abff,
+    126px 84px 0 0 #4048ff,
+    84px 98px 0 0 #010799,
+    -14px 112px 0 0 #7077fb,
+    0 126px 0 0 #4048ff,
+    14px 112px 0 0 #a8abff,
+    28px 126px 0 0 #4048ff,
+    168px 14px 0 0 #7077fb,
+    182px 28px 0 0 #4048ff,
+    196px 14px 0 0 #010799,
+    210px 42px 0 0 #a8abff,
+    168px 56px 0 0 #4048ff,
+    196px 70px 0 0 #7077fb;
+  animation: kupe-matrix-breathe 4.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--kupe-hero) 45%, transparent));
+}
+
+@keyframes kupe-matrix-breathe {
+  0%,
+  100% {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.62;
+    transform: scale(1.04);
+  }
+}
+
+.kupe-hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+}
+
+.kupe-hero-copy h1 {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.75rem;
+}
+
+.kupe-hero-copy p {
+  margin: 0;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.kupe-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kupe-hero);
+  margin-bottom: 0.85rem;
+}
+
+.kupe-kicker::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--kupe-matrix-on);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--kupe-hero) 70%, transparent);
+}
+
+/* Compact matrix strip used on inner pages (quickstart). */
+.kupe-hero.kupe-hero-compact {
+  padding: 2rem 1.5rem 1.75rem;
+}
+
+@media (max-width: 640px) {
+  .kupe-hero {
+    padding: 1.75rem 1.15rem 1.5rem;
+  }
+
+  .kupe-matrix::after {
+    right: 12px;
+    top: 16px;
+    transform: scale(0.72);
+    transform-origin: top right;
+  }
+}

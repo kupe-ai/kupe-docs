@@ -1,0 +1,79 @@
+---
+title: Billing and usage
+description: Wallet, invoices, cost summary, and daily usage — no checkout.
+---
+
+Public billing is **wallet + invoices**. Credit purchase (Razorpay / plans / subscribe) is dashboard-only and is not in this OpenAPI spec.
+
+Usage is **cost-summary** and **daily** only. Per-service breakdown (`GET /v1/orgs/{org_id}/usage`) and per-session metric lines are excluded.
+
+## Wallet and invoices
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+org_id = client.me().org_id
+wallet = client.billing.wallet.retrieve(org_id)
+invoices = client.billing.invoices.list(org_id)
+# PDF: GET /v1/orgs/{org_id}/billing/invoices/{invoice_id}/pdf
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const orgId = (await kupe.me()).org_id!;
+const wallet = await kupe.billing.wallet.retrieve(orgId);
+const invoices = await kupe.billing.invoices.list(orgId);
+```
+
+```bash cURL
+curl https://x.kupe.in/v1/orgs/org_.../billing/wallet \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl https://x.kupe.in/v1/orgs/org_.../billing/invoices \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl https://x.kupe.in/v1/orgs/org_.../billing/invoices/inv_.../pdf \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" -o invoice.pdf
+```
+
+</CodeGroup>
+
+Pass `?currency=INR` (or `USD`) on wallet, invoices, and usage reads to choose display currency. `GET /v1/orgs/{org_id}/balance` is the calling-credit ledger in minor units.
+
+## Usage
+
+<CodeGroup>
+
+```python Python
+summary = client.usage.cost_summary(org_id, start_date="2026-08-01", end_date="2026-08-31")
+daily = client.usage.daily(org_id, start_date="2026-08-01", end_date="2026-08-31")
+print(summary.cost, summary.minutes_consumed)
+```
+
+```typescript TypeScript
+const summary = await kupe.usage.costSummary(orgId, {
+  start_date: "2026-08-01",
+  end_date: "2026-08-31",
+});
+const daily = await kupe.usage.daily(orgId, {
+  start_date: "2026-08-01",
+  end_date: "2026-08-31",
+});
+```
+
+```bash cURL
+curl "https://x.kupe.in/v1/orgs/org_.../usage/cost-summary?start_date=2026-08-01&end_date=2026-08-31" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl "https://x.kupe.in/v1/orgs/org_.../usage/daily?start_date=2026-08-01&end_date=2026-08-31" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+`cost-summary` powers dashboard tiles (`cost`, `minutes_consumed`, FX). `daily` is a paginated series. Top-ups and subscriptions stay in the [hub](https://hub.kupe.in) billing UI.

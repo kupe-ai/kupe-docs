@@ -1,0 +1,39 @@
+---
+title: API playground
+description: Interactive OpenAPI Try it against https://x.kupe.in with Bearer auth.
+---
+
+The **API reference** tab is generated from `openapi.yaml`. Each endpoint includes an interactive playground.
+
+1. Open any endpoint in **API reference**.
+2. Paste `sk-kupe-YOUR_KEY` into the Bearer field (placeholder `sk-kupe-YOUR_KEY`).
+3. Send the request — the playground targets **`https://x.kupe.in`**.
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+Kupe().me()
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+await new Kupe().me();
+```
+
+```bash cURL
+curl https://x.kupe.in/v1/me \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+Code samples on each page prefer **Python** (`kupe`), **TypeScript** (`@kupe/sdk`), and **cURL**, in that order.
+
+## What's in the spec
+
+Grouped by OpenAPI tag: Me, Agents, Realtime, Sessions, Inbound, Campaigns, Recipient lists, Tools, Composio, Analyses, Databases, Knowledge bases, Audio assets, Phones, Voices, Providers, Logs, Billing, Usage, Orgs, Projects, Members, API keys, Feature flags, Health.
+
+Omitted on purpose: payment checkout, Razorpay webhooks, `/internal/*`, telephony provider webhooks, and per-service usage breakdown.

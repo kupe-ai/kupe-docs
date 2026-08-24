@@ -1,0 +1,144 @@
+---
+title: Quickstart
+description: Install the Kupe SDK and run a realtime text turn in under a minute.
+mode: wide
+---
+
+<div class="kupe-hero kupe-hero-compact">
+  <div class="kupe-matrix" aria-hidden="true"></div>
+  <div class="kupe-hero-copy">
+    <div class="kupe-kicker">Quickstart</div>
+    <h1>From API key to a spoken reply</h1>
+    <p>
+      Create a project key in the dashboard, install the SDK, and stream one
+      turn over the Realtime WebSocket.
+    </p>
+  </div>
+</div>
+
+## 1. Get a key
+
+In [hub.kupe.in](https://hub.kupe.in) open a project and create an API key. It looks like `sk-kupe-...` and is scoped to that org and project.
+
+Export it (and optionally override the API host):
+
+```bash
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+export KUPE_BASE_URL=https://x.kupe.in   # optional
+```
+
+## 2. Install
+
+<CodeGroup>
+
+```bash Python
+pip install kupe
+```
+
+```bash TypeScript
+npm i @kupe/sdk
+```
+
+```bash cURL
+# no install — use curl against https://x.kupe.in
+```
+
+</CodeGroup>
+
+## 3. Mint a session and connect
+
+`GET /v1/me` fills in `org_id` / `project_id` for API keys, so the SDK constructor can be just `Kupe()`.
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+session = client.realtime.sessions.create(agent_id="agt_...", voice="priya")
+
+with client.realtime.connect(session) as rt:
+    rt.send_text("Hi — remind them EMI is due tomorrow.")
+    for event in rt:
+        if event.type == "response.output_audio_transcript.done":
+            print(event.transcript)
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const session = await kupe.realtime.sessions.create({
+  agent_id: "agt_...",
+  voice: "priya",
+});
+const rt = await kupe.realtime.connect(session);
+rt.sendText("Hi — remind them EMI is due tomorrow.");
+for await (const event of rt) {
+  if (event.type === "response.output_audio_transcript.done") {
+    console.log(event.transcript);
+  }
+}
+```
+
+```bash cURL
+# Mint
+curl -X POST https://x.kupe.in/v1/realtime/sessions \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"agent_id":"agt_...","voice":"priya"}'
+
+# Then connect (ephemeral secret from client_secret.value):
+# wss://x.kupe.in/v1/realtime?model=kupe-realtime&client_secret=...
+```
+
+</CodeGroup>
+
+The WebSocket speaks OpenAI-compatible JSON. Audio is **PCM16 mono at 24 kHz**. See [Realtime](/realtime) for client and server events.
+
+## 4. List your agents
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+me = client.me()
+page = client.agents.list(org_id=me.org_id, project_id=me.project_id)
+for agent in page.items:
+    print(agent.id, agent.name)
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const me = await kupe.me();
+const page = await kupe.agents.list({
+  org_id: me.org_id!,
+  project_id: me.project_id!,
+});
+for (const agent of page.items) {
+  console.log(agent.id, agent.name);
+}
+```
+
+```bash cURL
+# Resolve org + project, then list
+ORG=$(curl -s https://x.kupe.in/v1/me -H "Authorization: Bearer sk-kupe-YOUR_KEY" | jq -r .org_id)
+PRJ=$(curl -s https://x.kupe.in/v1/me -H "Authorization: Bearer sk-kupe-YOUR_KEY" | jq -r .project_id)
+
+curl "https://x.kupe.in/v1/orgs/${ORG}/projects/${PRJ}/agents" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+## Try it in the docs
+
+Every REST endpoint in the **API reference** tab has an interactive playground. Paste `sk-kupe-YOUR_KEY` into the Bearer field — requests go to `https://x.kupe.in`. See [API playground](/playground).
+
+<Note>
+  Coding agents can call the same API over MCP. Install once with `https://mcp.kupe.in/mcp` — see [MCP](/mcp).
+</Note>

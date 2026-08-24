@@ -1,0 +1,61 @@
+---
+title: Logs
+description: Sessions, transcripts, recordings, and tool-call events.
+---
+
+There is no separate “logs” product. Use sessions plus the nested read APIs. Per-service usage metric lines are **not** public — see [Billing and usage](/guides/billing) for cost summary and daily totals.
+
+## Sessions
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+org_id = client.me().org_id
+page = client.logs.sessions.list(org_id)
+session = client.sessions.retrieve(page.items[0].session_id)
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const orgId = (await kupe.me()).org_id!;
+const page = await kupe.logs.sessions.list(orgId);
+const session = await kupe.sessions.retrieve(page.items[0].session_id);
+```
+
+```bash cURL
+curl "https://x.kupe.in/v1/orgs/org_.../sessions" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl https://x.kupe.in/v1/sessions/sess_... \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+`GET /v1/orgs/{org_id}/sessions` is the index. `GET /v1/sessions/{session_id}` has direction (`web` | `inbound` | `outbound`), transport, timestamps, and hangup fields. End an in-flight call with `POST /v1/sessions/{session_id}/end`.
+
+Create LiveKit web sessions with `POST /v1/sessions` (`channel: "web"`). Telephony sessions are created by inbound / campaign dialers, not this mint.
+
+## Transcript
+
+`GET /v1/sessions/{session_id}/transcript` — turns for that call.
+
+## Recordings
+
+- `GET /v1/sessions/{session_id}/recording`
+- `GET /v1/orgs/{org_id}/recordings`
+- `GET /v1/recordings/{recording_id}/playback-url` — short-lived URL
+
+## Tool calls
+
+- `GET /v1/orgs/{org_id}/tool-call-events?agent_id=`
+- `GET /v1/orgs/{org_id}/agents/{agent_id}/tool-call-stats`
+
+## Post-call analysis results
+
+`GET /v1/sessions/{session_id}/analysis` — outputs from analyses attached to the agent. Config CRUD is under `/v1/orgs/{org_id}/post-call-analyses`.

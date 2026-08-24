@@ -1,0 +1,80 @@
+---
+title: Inbound
+description: Bind an agent to a phone number and set when it answers.
+---
+
+An inbound **deployment** maps one telephony account (DID) to one agent, with an availability window. Calls outside that window are not connected.
+
+## Create
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+me = client.me()
+dep = client.inbound.create(
+    org_id=me.org_id,
+    project_id=me.project_id,
+    agent_id="agt_...",
+    telephony_account_id="tel_...",
+    name="Collections DID",
+    status="active",
+    availability={
+        "always": False,
+        "timezone": "Asia/Kolkata",
+        "days_of_week": [1, 2, 3, 4, 5],
+        "start": "09:00",
+        "end": "18:00",
+        "after_hours_message": "Call back during business hours.",
+    },
+)
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const me = await kupe.me();
+const dep = await kupe.inbound.create({
+  org_id: me.org_id!,
+  project_id: me.project_id!,
+  agent_id: "agt_...",
+  telephony_account_id: "tel_...",
+  name: "Collections DID",
+  status: "active",
+  availability: {
+    always: false,
+    timezone: "Asia/Kolkata",
+    days_of_week: [1, 2, 3, 4, 5],
+    start: "09:00",
+    end: "18:00",
+    after_hours_message: "Call back during business hours.",
+  },
+});
+```
+
+```bash cURL
+curl -X POST https://x.kupe.in/v1/inbound \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "org_id":"org_...","project_id":"prj_...",
+    "agent_id":"agt_...","telephony_account_id":"tel_...",
+    "name":"Collections DID","status":"active",
+    "availability":{"always":true,"timezone":"Asia/Kolkata"}
+  }'
+```
+
+</CodeGroup>
+
+`availability.always: true` (default) ignores days and hours. `days_of_week` is `0=Sun … 6=Sat`. Patch with `PATCH /v1/inbound/{deployment_id}` (`status`: `draft` | `active` | `paused`).
+
+## List and delete
+
+- `GET /v1/orgs/{org_id}/projects/{project_id}/inbound`
+- `GET /v1/inbound/{deployment_id}`
+- `DELETE /v1/inbound/{deployment_id}`
+
+Requires `feature_inbound`. Kupe-managed Plivo numbers get Answer / Hangup URLs attached on [purchase](/guides/phones). Provider webhook paths are not part of this public spec.

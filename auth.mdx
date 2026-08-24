@@ -1,0 +1,108 @@
+---
+title: Authentication
+description: Bearer API keys, JWTs, and GET /v1/me for org and project IDs.
+---
+
+Kupe accepts a single `Authorization` header on every `/v1` route.
+
+```
+Authorization: Bearer sk-kupe-YOUR_KEY
+```
+
+Project API keys start with `sk-kupe-`. Dashboard sessions can send a Supabase user JWT instead.
+
+<CodeGroup>
+
+```python Python
+import os
+from kupe import Kupe
+
+client = Kupe()  # reads KUPE_API_KEY
+# or
+client = Kupe(api_key=os.environ["KUPE_API_KEY"], base_url="https://x.kupe.in")
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe(); // process.env.KUPE_API_KEY
+// or
+const kupe = new Kupe({
+  apiKey: process.env.KUPE_API_KEY!,
+  baseUrl: "https://x.kupe.in",
+});
+```
+
+```bash cURL
+curl https://x.kupe.in/v1/me \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+## Environment
+
+| Variable | Required | Default |
+| --- | --- | --- |
+| `KUPE_API_KEY` | yes (unless you pass `api_key=`) | — |
+| `KUPE_BASE_URL` | no | `https://x.kupe.in` |
+
+SDKs always join paths as `{base}/v1/...`. Do not put `/v1` in `KUPE_BASE_URL`.
+
+## Who am I?
+
+API keys are scoped to **one org and one project**. JWT callers are a user, not a project, so those IDs are null.
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+me = Kupe().me()
+# {"auth": "api_key", "org_id": "org_...", "project_id": "prj_...", ...}
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const me = await new Kupe().me();
+```
+
+```bash cURL
+curl https://x.kupe.in/v1/me \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+<ResponseField name="auth" type='"api_key" | "jwt"'>
+  How this request was authenticated.
+</ResponseField>
+<ResponseField name="org_id" type="string | null">
+  Set for API keys. Null for JWT.
+</ResponseField>
+<ResponseField name="project_id" type="string | null">
+  Set for API keys. Null for JWT.
+</ResponseField>
+<ResponseField name="user_id" type="string | null">
+  Set for JWT callers.
+</ResponseField>
+<ResponseField name="api_key_id" type="string | null">
+  Set for API-key callers.
+</ResponseField>
+
+Use these IDs on nested routes such as `GET /v1/orgs/{org_id}/projects/{project_id}/agents`.
+
+## JWT-only routes
+
+Voice **clone / patch / delete** require a signed-in user (`auth: jwt`). Calling them with an API key returns `403`. Listing catalog voices, preview, and speak still work with a key where noted in the [Voices](/guides/voices) guide.
+
+## Keys
+
+Create and revoke keys from a project:
+
+- `POST /v1/projects/{project_id}/api-keys`
+- `GET /v1/projects/{project_id}/api-keys`
+- `DELETE /v1/projects/{project_id}/api-keys/{key_id}`
+
+Treat keys like passwords. The playground stores the Bearer token in the browser only for that session — never commit `sk-kupe-...` to git.

@@ -1,0 +1,90 @@
+---
+title: Kupe
+description: Voice agents over HTTP and WebSocket — Python, TypeScript, cURL, and MCP.
+mode: wide
+---
+
+<div class="kupe-hero">
+  <div class="kupe-matrix" aria-hidden="true"></div>
+  <div class="kupe-hero-copy">
+    <div class="kupe-kicker">Kupe API</div>
+    <h1>Ship voice agents from three lines of code</h1>
+    <p>
+      Mint a realtime session, stream PCM16 or text over WebSocket, and drive
+      campaigns, inbound numbers, voices, and tools with the same key.
+    </p>
+  </div>
+</div>
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()  # KUPE_API_KEY
+session = client.realtime.sessions.create(agent_id="agt_...", voice="priya")
+with client.realtime.connect(session) as rt:
+    rt.send_text("Hi — remind them EMI is due tomorrow.")
+    for event in rt:
+        if event.type == "response.output_audio_transcript.done":
+            print(event.transcript)
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe(); // process.env.KUPE_API_KEY
+const session = await kupe.realtime.sessions.create({
+  agent_id: "agt_...",
+  voice: "priya",
+});
+const rt = await kupe.realtime.connect(session);
+```
+
+```bash cURL
+curl -X POST https://x.kupe.in/v1/realtime/sessions \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"agent_id":"agt_...","voice":"priya"}'
+```
+
+</CodeGroup>
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install `kupe` or `@kupe/sdk`, set `KUPE_API_KEY`, and run a text turn.
+  </Card>
+  <Card title="Authentication" icon="key" href="/auth">
+    Bearer `sk-kupe-...` or a Supabase JWT. Resolve org and project with `GET /v1/me`.
+  </Card>
+  <Card title="Realtime events" icon="audio-lines" href="/realtime">
+    OpenAI-compatible WebSocket at `wss://x.kupe.in/v1/realtime`.
+  </Card>
+  <Card title="API playground" icon="terminal" href="/playground">
+    Interactive OpenAPI Try it at `https://x.kupe.in` with Bearer auth.
+  </Card>
+  <Card title="MCP" icon="bot" href="/mcp">
+    Point Cursor, Claude Code, or Codex at `https://mcp.kupe.in/mcp`.
+  </Card>
+</CardGroup>
+
+## What you can call
+
+The interactive [API playground](/playground) is generated from a curated OpenAPI spec. Try it sends requests to `https://x.kupe.in` with a Bearer token.
+
+| Area | Use it for |
+| --- | --- |
+| Agents | CRUD, versions, commit, archive, tools, analyses, memories, tests |
+| Realtime | Mint a session, then connect over WebSocket |
+| Sessions | LiveKit web calls and telephony sessions |
+| Inbound / campaigns | Answer a DID, or dial a recipient list |
+| Phones / voices | Search and buy numbers; list, clone, preview voices |
+| Tools / Composio | Webhooks, MCP tools, and connected apps |
+| Databases / knowledge | Structured call data and RAG files |
+| Logs / billing / usage | Transcripts, recordings, wallet, cost summary |
+
+Payments, provider webhooks, and per-service usage breakdowns are not part of this public API.
+
+## Base URL
+
+`https://x.kupe.in` — every path in this site is under `/v1/...`. SDKs join `{base}/v1/...` so you never drop the prefix.

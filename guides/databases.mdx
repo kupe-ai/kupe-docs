@@ -1,0 +1,108 @@
+---
+title: Databases
+description: Call databases, rows, export, and knowledge bases for RAG.
+---
+
+**Call databases** store structured rows your agents can read and write during a conversation. **Knowledge bases** hold files for RAG search. Both are project-scoped.
+
+## Call databases
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+me = client.me()
+db = client.databases.create(
+    org_id=me.org_id,
+    project_id=me.project_id,
+    name="Loans",
+)
+client.databases.attach_agent(db.id, agent_id="agt_...")
+rows = client.databases.rows.list(db.id, q="pending")
+```
+
+```typescript TypeScript
+import { Kupe } from "@kupe/sdk";
+
+const kupe = new Kupe();
+const me = await kupe.me();
+const db = await kupe.databases.create({
+  org_id: me.org_id!,
+  project_id: me.project_id!,
+  name: "Loans",
+});
+await kupe.databases.attachAgent(db.id, { agent_id: "agt_..." });
+const rows = await kupe.databases.rows.list(db.id, { q: "pending" });
+```
+
+```bash cURL
+curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../databases \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Loans"}'
+
+curl "https://x.kupe.in/v1/databases/db_.../rows?q=pending" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+Useful routes:
+
+- List / create: `GET|POST /v1/orgs/{org_id}/projects/{project_id}/databases`
+- Get / patch / archive: `/v1/databases/{database_id}`
+- Agents: `GET|POST /v1/databases/{id}/agents`, `DELETE .../agents/{agent_id}`
+- Rows: `GET /v1/databases/{id}/rows` (cursor + `q`)
+- Export: `GET /v1/databases/{id}/export?format=csv|json|ndjson|zip`
+- Reverse: `GET /v1/agents/{agent_id}/databases`
+
+Requires `feature_databases`.
+
+## Knowledge bases
+
+Upload files, then search:
+
+<CodeGroup>
+
+```python Python
+kb = client.knowledge_bases.create(
+    org_id=me.org_id, project_id=me.project_id, name="Policy"
+)
+client.knowledge_bases.files.upload(kb.id, file=open("policy.pdf", "rb"))
+hits = client.knowledge_bases.search(kb.id, query="prepayment charges", top_k=5)
+```
+
+```typescript TypeScript
+const kb = await kupe.knowledgeBases.create({
+  org_id: me.org_id!,
+  project_id: me.project_id!,
+  name: "Policy",
+});
+await kupe.knowledgeBases.files.upload(kb.id, file);
+const hits = await kupe.knowledgeBases.search(kb.id, {
+  query: "prepayment charges",
+  top_k: 5,
+});
+```
+
+```bash cURL
+curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../knowledge-bases \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Policy"}'
+
+curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../knowledge-bases/kb_.../search \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"prepayment charges","top_k":5}'
+```
+
+</CodeGroup>
+
+Ingest status webhooks are internal and omitted from this spec.
+
+## Audio assets
+
+Ambient beds for web calls: `GET|POST /v1/orgs/{org_id}/projects/{project_id}/audio-assets`, archive with `POST /v1/audio-assets/{asset_id}/archive`.

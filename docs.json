@@ -1,0 +1,144 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "Kupe",
+  "description": "Voice agents API — Python SDK, TypeScript SDK, and MCP.",
+  "colors": {
+    "primary": "#4048ff",
+    "light": "#7077fb",
+    "dark": "#010799"
+  },
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png",
+    "href": "/"
+  },
+  "favicon": "/logo/mark.png",
+  "appearance": {
+    "default": "system"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Satoshi",
+      "source": "/fonts/Satoshi-Bold.woff2",
+      "format": "woff2",
+      "weight": 700
+    },
+    "body": {
+      "family": "Satoshi",
+      "source": "/fonts/Satoshi-Regular.woff2",
+      "format": "woff2",
+      "weight": 400
+    }
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": {
+      "theme": {
+        "light": "github-light",
+        "dark": "github-dark"
+      }
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Dashboard",
+        "href": "https://hub.kupe.in"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get API key",
+      "href": "https://hub.kupe.in"
+    }
+  },
+  "footer": {
+    "socials": {
+      "website": "https://kupe.in"
+    }
+  },
+  "api": {
+    "openapi": "openapi.yaml",
+    "playground": {
+      "display": "interactive",
+      "proxy": true
+    },
+    "params": {
+      "expanded": "closed"
+    },
+    "url": "full",
+    "examples": {
+      "languages": ["python", "typescript", "curl"],
+      "defaults": "required",
+      "prefill": true,
+      "autogenerate": true
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Get started",
+            "icon": "sparkles",
+            "pages": [
+              "index",
+              "quickstart",
+              "auth",
+              "playground"
+            ]
+          },
+          {
+            "group": "Realtime",
+            "icon": "audio-lines",
+            "pages": ["realtime"]
+          },
+          {
+            "group": "Platform",
+            "icon": "layers",
+            "pages": [
+              "guides/campaigns",
+              "guides/inbound",
+              "guides/phones",
+              "guides/voices",
+              "guides/tools",
+              "guides/databases",
+              "guides/logs",
+              "guides/billing"
+            ]
+          },
+          {
+            "group": "MCP",
+            "icon": "bot",
+            "pages": ["mcp"]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "icon": "square-terminal",
+        "openapi": "openapi.yaml"
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Dashboard",
+          "href": "https://hub.kupe.in",
+          "icon": "layout-dashboard"
+        },
+        {
+          "anchor": "API",
+          "href": "https://x.kupe.in",
+          "icon": "globe"
+        }
+      ]
+    }
+  }
+}
