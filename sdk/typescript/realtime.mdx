@@ -1,0 +1,85 @@
+---
+title: TypeScript realtime
+description: Mint a kupe-realtime session with npm install kupe-sdk and stream one text turn over WebSocket.
+---
+
+Mint with `kupe.realtime.sessions.create`, then `kupe.realtime.connect(session)`. Audio is PCM16 mono **24 kHz**. Model `kupe-realtime`. Web-only — no telephony minutes.
+
+Identify the agent with **name** or **agent_id**. A new name creates the agent with prompt, greeting, voice, and tools/mcp. Pass **voice** (sanitized name) or **voice_id** — either one (copy the id from the voice library).
+
+## Terminal
+
+Node 18+ (ESM). From a folder where `kupe-sdk` is installed:
+
+```bash
+npm install kupe-sdk
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+node --input-type=module <<'EOF'
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+const session = await kupe.realtime.sessions.create({
+  name: "Priya",
+  voice: "priya",
+  prompt: "You collect overdue EMIs. Be warm and brief.",
+  greeting: "Hi, this is Priya from the bank.",
+});
+console.log("ws", session.websocket_url);
+
+const rt = await kupe.realtime.connect(session);
+rt.sendText("Remind them EMI is due tomorrow.");
+for await (const event of rt) {
+  if (event.type === "response.output_audio_transcript.done") {
+    console.log("agent:", event.transcript);
+    rt.close();
+    break;
+  }
+  if (event.type === "error") {
+    console.error("error:", event);
+    rt.close();
+    break;
+  }
+}
+EOF
+```
+
+File form (`realtime.mjs`):
+
+```ts
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+const session = await kupe.realtime.sessions.create({
+  name: "Priya",
+  voice: "priya",
+  prompt: "You collect overdue EMIs. Be warm and brief.",
+  greeting: "Hi, this is Priya from the bank.",
+});
+const rt = await kupe.realtime.connect(session);
+rt.sendText("Remind them EMI is due tomorrow.");
+for await (const event of rt) {
+  if (event.type === "response.output_audio_transcript.done") {
+    console.log("agent:", event.transcript);
+    rt.close();
+    break;
+  }
+}
+```
+
+```bash
+node realtime.mjs
+```
+
+## Events you will see
+
+| `event.type` | Meaning |
+| --- | --- |
+| `session.created` | Handshake done |
+| `response.output_audio.delta` | Base64 PCM16 chunk |
+| `response.output_audio_transcript.done` | Final spoken text (`event.transcript`) |
+| `response.done` | Turn finished, includes usage |
+| `error` | Protocol or runtime error |
+
+`sendText` / `send_text` send `conversation.item.create` then `response.create`. Mic path: `rt.appendAudio(pcm16)` at 24 kHz.
+
+Full event tables: [Realtime WebSocket](/realtime).

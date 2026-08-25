@@ -5,17 +5,92 @@ description: Mint a session, connect to wss://x.kupe.in/v1/realtime, and handle 
 
 Kupe Realtime is an OpenAI-shaped voice WebSocket. You mint an ephemeral session over HTTP, then attach to `wss://x.kupe.in/v1/realtime`.
 
-The session always runs Kupe STT, TTS, and LLM. Voices are addressed by sanitized name (`priya`, not a vendor id). Tools attached to the agent run server-side. This path is **web-only** — it does not write telephony minutes.
+The session always runs Kupe STT, TTS, and LLM. Voices are addressed by sanitized name (`priya`) **or** voice id (copy it from the voice library). Tools attached to the agent run server-side. This path is **web-only** — it does not write telephony minutes.
+
+## Run it in a terminal
+
+<CodeGroup>
+
+```bash Python
+pip install kupe
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+python - <<'PY'
+from kupe import Kupe
+
+client = Kupe()
+session = client.realtime.sessions.create(
+    name="Priya",
+    voice="priya",
+    prompt="You collect overdue EMIs. Be warm and brief.",
+    greeting="Hi, this is Priya from the bank.",
+)
+with client.realtime.connect(session) as rt:
+    rt.send_text("Remind them EMI is due tomorrow.")
+    for event in rt:
+        if event.type == "response.output_audio_transcript.done":
+            print(event.transcript)
+            break
+PY
+```
+
+```bash TypeScript
+npm install kupe-sdk
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+node --input-type=module <<'EOF'
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+const session = await kupe.realtime.sessions.create({
+  name: "Priya",
+  voice: "priya",
+  prompt: "You collect overdue EMIs. Be warm and brief.",
+  greeting: "Hi, this is Priya from the bank.",
+});
+const rt = await kupe.realtime.connect(session);
+rt.sendText("Remind them EMI is due tomorrow.");
+for await (const event of rt) {
+  if (event.type === "response.output_audio_transcript.done") {
+    console.log(event.transcript);
+    rt.close();
+    break;
+  }
+}
+EOF
+```
+
+</CodeGroup>
+
+Same snippets live on the [Python](/sdk/python/realtime) and [TypeScript](/sdk/typescript/realtime) SDK tabs.
 
 ## Mint
 
 `POST /v1/realtime/sessions`
 
-<ParamField path="agent_id" type="string" required>
-  Agent to hydrate (prompt, greeting, tools, default voice).
+Identify the agent with **either** `name` or `agent_id` (copy the id from the agent editor). If `name` does not exist in the project, Kupe creates the agent with the prompt, greeting, voice, and tools you pass.
+
+<ParamField path="name" type="string">
+  Agent name. Reuses a live agent with this name, or creates one.
+</ParamField>
+<ParamField path="agent_id" type="string">
+  Existing agent id. Alias: `id`. Optional when `name` is set.
 </ParamField>
 <ParamField path="voice" type="string">
-  Catalog voice name. Overrides the agent's voice for this session.
+  Voice name or voice id. Alias: `voice_id`. Overrides the agent's voice for this session.
+</ParamField>
+<ParamField path="voice_id" type="string">
+  Alias for `voice` — library `voice_id` or row id.
+</ParamField>
+<ParamField path="prompt" type="string">
+  System prompt. Alias: `instructions`. Saved on a newly created agent; overlays this session for an existing one.
+</ParamField>
+<ParamField path="greeting" type="string">
+  Spoken first message. Alias: `greetings`.
+</ParamField>
+<ParamField path="tools" type="array">
+  OpenAI-style function tools, or webhook/MCP tools (`http_url`, `type: "mcp"`).
+</ParamField>
+<ParamField path="mcp" type="object">
+  MCP server: `{ url, headers?, tools? }` where `tools` are names or full defs. Same as passing MCP items in `tools`.
 </ParamField>
 <ParamField path="variables" type="object">
   Values for `{{placeholders}}` in the prompt and greeting.
@@ -27,7 +102,7 @@ The session always runs Kupe STT, TTS, and LLM. Voices are addressed by sanitize
   Optional when using an API key.
 </ParamField>
 
-The response includes `client_secret.value` (single-use ticket) and `websocket_url`.
+The response includes `client_secret.value` (single-use ticket), `websocket_url`, and the resolved `agent_id`.
 
 <CodeGroup>
 
@@ -35,8 +110,13 @@ The response includes `client_secret.value` (single-use ticket) and `websocket_u
 from kupe import Kupe
 
 client = Kupe()
-session = client.realtime.sessions.create(agent_id="agt_...", voice="priya")
-# session.client_secret.value, session.websocket_url
+session = client.realtime.sessions.create(
+    name="Priya",
+    voice="priya",
+    prompt="You collect overdue EMIs. Be warm and brief.",
+    greeting="Hi, this is Priya from the bank.",
+)
+# session.client_secret.value, session.websocket_url, session.agent_id
 ```
 
 ```typescript TypeScript
@@ -44,8 +124,10 @@ import { Kupe } from "kupe-sdk";
 
 const kupe = new Kupe();
 const session = await kupe.realtime.sessions.create({
-  agent_id: "agt_...",
+  name: "Priya",
   voice: "priya",
+  prompt: "You collect overdue EMIs. Be warm and brief.",
+  greeting: "Hi, this is Priya from the bank.",
 });
 ```
 
@@ -53,10 +135,34 @@ const session = await kupe.realtime.sessions.create({
 curl -X POST https://x.kupe.in/v1/realtime/sessions \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"agent_id":"agt_...","voice":"priya"}'
+  -d '{
+    "name": "Priya",
+    "voice": "priya",
+    "prompt": "You collect overdue EMIs. Be warm and brief.",
+    "greeting": "Hi, this is Priya from the bank."
+  }'
 ```
 
 </CodeGroup>
+
+You can pass OpenAI-style tools (or MCP) on the same mint call. Webhook/MCP tools are saved on a newly created agent; function-only tools run for this session.
+
+```python
+session = client.realtime.sessions.create(
+    name="Priya",
+    voice="priya",
+    prompt="You collect overdue EMIs. Be warm and brief.",
+    greeting="Hi, this is Priya from the bank.",
+    tools=[{
+        "type": "function",
+        "name": "lookup_emi",
+        "description": "Look up an EMI by phone",
+        "parameters": {"type": "object", "properties": {"phone": {"type": "string"}}, "required": ["phone"]},
+        "http_url": "https://example.com/emi",
+    }],
+    # or: mcp={"url": "https://mcp.example.com/mcp", "headers": {"Authorization": "Bearer …"}, "tools": ["search"]},
+)
+```
 
 ## Connect
 

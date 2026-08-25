@@ -103,9 +103,12 @@
             "group": "Platform",
             "icon": "layers",
             "pages": [
+              "guides/features",
+              "guides/prompting",
               "guides/campaigns",
               "guides/inbound",
               "guides/phones",
+              "guides/kyc",
               "guides/voices",
               "guides/tools",
               "guides/databases",
@@ -124,6 +127,28 @@
         "tab": "API reference",
         "icon": "square-terminal",
         "openapi": "openapi.yaml"
+      },
+      {
+        "tab": "SDKs",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "Python",
+            "icon": "braces",
+            "pages": [
+              "sdk/python/index",
+              "sdk/python/realtime"
+            ]
+          },
+          {
+            "group": "TypeScript",
+            "icon": "file-code",
+            "pages": [
+              "sdk/typescript/index",
+              "sdk/typescript/realtime"
+            ]
+          }
+        ]
       }
     ],
     "global": {

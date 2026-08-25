@@ -7492,8 +7492,23 @@ components:
     CreateRealtimeSessionBody:
       properties:
         agent_id:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Agent Id
+          description: Existing agent id. Alias: id.
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Agent name. Reuses a live agent with this name, or creates one.
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+          description: Alias for agent_id.
         org_id:
           anyOf:
           - type: string
@@ -7509,6 +7524,52 @@ components:
           - type: string
           - type: 'null'
           title: Voice
+          description: Voice name or voice id. Alias: voice_id.
+        voice_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Voice Id
+          description: Alias for voice — library voice_id or row id.
+        prompt:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prompt
+          description: System prompt. Alias: instructions.
+        instructions:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instructions
+        greeting:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Greeting
+          description: Spoken first message. Alias: greetings.
+        greetings:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Greetings
+        tools:
+          anyOf:
+          - items:
+              type: object
+            type: array
+          - type: 'null'
+          title: Tools
+          description: OpenAI-style function tools, or webhook/MCP tools (http_url / type=mcp).
+        mcp:
+          anyOf:
+          - type: object
+          - type: array
+            items:
+              type: object
+          - type: 'null'
+          title: Mcp
+          description: 'MCP server(s): {url, headers?, tools?} where tools are names or full defs.'
         variables:
           anyOf:
           - additionalProperties:
@@ -7517,8 +7578,6 @@ components:
           - type: 'null'
           title: Variables
       type: object
-      required:
-      - agent_id
       title: CreateRealtimeSessionBody
     CreateSessionBody:
       properties:
@@ -10083,6 +10142,11 @@ components:
           - type: string
           - type: 'null'
           title: Session Id
+        agent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Id
       type: object
       required:
       - id

@@ -1,0 +1,53 @@
+---
+title: Platform features
+description: Agents, phones, inbound, outbound, knowledge, databases, voices, tools, analytics, and KYC.
+---
+
+Feature flags gate console pages and some API surfaces. Check **Settings** or ask Kai. Flags:
+
+| Flag | What it unlocks |
+| --- | --- |
+| `feature_agents` | Voice agents (prompt, greeting, voice, tools, versions) |
+| `feature_knowledge_base` | RAG files the agent can search mid-call |
+| `feature_voice_library` | Catalog + cloned voices (k-TTS) |
+| `feature_phone_numbers` | Search / buy / BYOK telephony accounts |
+| `feature_inbound` | Bind a DID to an agent with availability hours |
+| `feature_outbound` / `feature_batch_calls` | Campaigns, recipient lists, CSV |
+| `feature_analytics` | Call volume, connect rate, per-agent stats |
+| `feature_databases` | Post-call structured tables |
+| `feature_transfer` | Warm transfer destinations |
+| `account_access` | Workspace membership |
+
+Always on: Ask Kai, Home, Deploy with code, Usage, Billing, Settings, Integrations, Documentation.
+
+## Build
+
+**Agents.** Real first-name persona, spoken [system prompt](/guides/prompting), greeting, STT / LLM / TTS, tools, knowledge bases, caller memory, dynamic greeting, variables, post-call fields, versions, web tester.
+
+**Knowledge base.** Upload files, search (`top_k`). Attach with `config.knowledge_base_ids`.
+
+**Voice library.** Catalog voices by sanitized name (`priya`). Clone from a sample (JWT).
+
+**Integrations.** Org-level webhook, MCP, and Composio tools.
+
+## Deploy
+
+**Phone numbers.** US: buy immediately. India: [KYC](/guides/kyc) must be **accepted** first. BYOK Twilio / Plivo / Exotel.
+
+**Inbound.** One telephony account → one agent + availability window.
+
+**Outbound campaigns.** Batch + contacts or recipient list. Start / pause / resume / cancel / schedule.
+
+**Deploy with code.** [Python SDK](/sdk/python) (`pip install kupe`), [TypeScript SDK](/sdk/typescript) (`npm install kupe-sdk`), [Kupe MCP](/kupe-mcp), [Realtime](/realtime).
+
+## Monitor
+
+**Analytics.** Total calls, connected, connect rate, volume by hour.
+
+**Databases.** After each attached agent's call, a row is written (who called, started, duration, extracted fields). Export CSV / JSON. See [Databases](/guides/databases).
+
+**Usage / billing.** Wallet, invoices. Cost-summary + daily. No checkout in the public API.
+
+## Speech stack
+
+STT **k-STT**, TTS **k-TTS**, LLM **Kupe**. Realtime model `kupe-realtime`. Do not name upstream vendors in product copy.

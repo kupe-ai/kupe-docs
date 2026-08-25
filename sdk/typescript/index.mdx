@@ -1,0 +1,114 @@
+---
+title: TypeScript SDK
+description: npm install kupe-sdk — install, authenticate, list agents, and run a realtime turn.
+---
+
+Official TypeScript / Node client for the Kupe voice API. Node **18+**, ESM.
+
+```bash
+npm install kupe-sdk
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+```
+
+Import `import { Kupe } from "kupe-sdk"`. Default host is `https://x.kupe.in`. Optional `KUPE_BASE_URL`. Paths always join as `{base}/v1/...`.
+
+`sendText` and `send_text` are the same method.
+
+<Note>
+  Create a project key in [hub.kupe.in](https://hub.kupe.in). It looks like `sk-kupe-...`.
+</Note>
+
+## Run a realtime turn (terminal)
+
+```bash
+npm install kupe-sdk
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+node --input-type=module <<'EOF'
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+const session = await kupe.realtime.sessions.create({
+  name: "Priya",
+  voice: "priya",
+  prompt: "You collect overdue EMIs. Be warm and brief.",
+  greeting: "Hi, this is Priya from the bank.",
+});
+console.log("session", session.agent_id);
+const rt = await kupe.realtime.connect(session);
+rt.sendText("Hi Priya — remind this customer their EMI is due tomorrow.");
+for await (const event of rt) {
+  if (event.type === "response.output_audio_transcript.done") {
+    console.log("agent:", event.transcript);
+    rt.close();
+    break;
+  }
+  if (event.type === "error") {
+    console.error("error:", event);
+    rt.close();
+    break;
+  }
+}
+EOF
+```
+
+Or save as `realtime.mjs` and run `node realtime.mjs`. Reuse an existing agent with `agent_id`. Pass `voice` or `voice_id` (copy from the voice library). See [Realtime](/sdk/typescript/realtime).
+
+## Who am I
+
+```ts
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+const me = await kupe.me();
+console.log(me.org_id, me.project_id, me.auth);
+```
+
+## List agents
+
+```ts
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+const page = await kupe.agents.list();
+for (const agent of page.items) {
+  console.log(agent.id, agent.name);
+}
+```
+
+## Create an agent
+
+```ts
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+const agent = await kupe.agents.create({
+  name: "Meera",
+  system_prompt: "You are Meera, a warm collections specialist. Be brief.",
+  greeting: "Hi, this is Meera from the bank.",
+});
+console.log(agent.id);
+```
+
+Write spoken prompts — see [Voice agent prompting](/guides/prompting).
+
+## Constructor
+
+```ts
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe({
+  apiKey: process.env.KUPE_API_KEY,
+  baseUrl: "https://x.kupe.in",
+});
+```
+
+| Env | Required | Default |
+| --- | --- | --- |
+| `KUPE_API_KEY` | unless you pass `apiKey` | — |
+| `KUPE_BASE_URL` | no | `https://x.kupe.in` |
+
+## Resources
+
+`kupe.agents`, `realtime`, `sessions`, `inbound`, `campaigns`, `recipientLists`, `tools`, `composio`, `analyses`, `databases`, `knowledgeBases`, `audioAssets`, `phones`, `voices`, `providers`, `logs`, `billing`, `usage`, `orgs`, `projects`.
+
+Next: [Realtime](/sdk/typescript/realtime) · [Quickstart](/quickstart) · [API reference](/api-reference)

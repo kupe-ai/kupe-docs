@@ -1,0 +1,48 @@
+---
+title: India KYC
+description: Business verification required before buying India numbers. US numbers need no KYC.
+---
+
+Kupe-managed Plivo numbers: **US can be purchased immediately**. **India requires an accepted compliance application** first.
+
+Do this in the console: **Phone numbers → Add number → India → Start verification**. Document upload is dashboard-only.
+
+## What to submit
+
+KYC is under **your** business (not Kupe's):
+
+| Field | Notes |
+| --- | --- |
+| Business name | Legal name |
+| First / last name | Authorised person |
+| CIN or Udyam number | Registration number from the incorporation certificate — **not** the GSTIN |
+| Email, phone | Contact |
+| Address, city, state, postal code | India |
+| Registration certificate | MCA Certificate of Incorporation or Udyam |
+| GST certificate | Form GST REG-06 |
+
+Plivo reviews the packet. Status is usually `submitted` for a few minutes, then `accepted` or `rejected`.
+
+## Statuses
+
+| Status | Buy India numbers? |
+| --- | --- |
+| none | No |
+| draft / submitted | No — wait or resume |
+| accepted | Yes |
+| rejected | No — resubmit using the rejection reason |
+
+The India numbers dialog has a **KYC status** tab.
+
+## API
+
+- `GET /v1/orgs/{org_id}/plivo/compliance/requirements`
+- `GET /v1/orgs/{org_id}/plivo/compliance`
+- `POST /v1/orgs/{org_id}/plivo/compliance`
+- `POST /v1/orgs/{org_id}/plivo/compliance/refresh`
+
+MCP `buy_phone_number` still needs `confirm=true`. If compliance is required and not accepted, purchase fails — finish KYC in the console.
+
+US numbers skip this. BYOK (your own Twilio / Plivo / Exotel) skips Kupe KYC because the number already lives on your account.
+
+See [Phones](/guides/phones) for search, buy, and release.

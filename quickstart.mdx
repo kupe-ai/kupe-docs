@@ -47,7 +47,7 @@ npm install kupe-sdk
 
 ## 3. Mint a session and connect
 
-`GET /v1/me` fills in `org_id` / `project_id` for API keys, so the SDK constructor can be just `Kupe()`.
+`GET /v1/me` fills in `org_id` / `project_id` for API keys, so the SDK constructor can be just `Kupe()`. Pass `voice` (name) or `voice_id` — either one.
 
 <CodeGroup>
 
@@ -55,7 +55,12 @@ npm install kupe-sdk
 from kupe import Kupe
 
 client = Kupe()
-session = client.realtime.sessions.create(agent_id="agt_...", voice="priya")
+session = client.realtime.sessions.create(
+    name="Priya",
+    voice="priya",
+    prompt="You collect overdue EMIs. Be warm and brief.",
+    greeting="Hi, this is Priya from the bank.",
+)
 
 with client.realtime.connect(session) as rt:
     rt.send_text("Hi — remind them EMI is due tomorrow.")
@@ -69,8 +74,10 @@ import { Kupe } from "kupe-sdk";
 
 const kupe = new Kupe();
 const session = await kupe.realtime.sessions.create({
-  agent_id: "agt_...",
+  name: "Priya",
   voice: "priya",
+  prompt: "You collect overdue EMIs. Be warm and brief.",
+  greeting: "Hi, this is Priya from the bank.",
 });
 const rt = await kupe.realtime.connect(session);
 rt.sendText("Hi — remind them EMI is due tomorrow.");
@@ -86,7 +93,12 @@ for await (const event of rt) {
 curl -X POST https://x.kupe.in/v1/realtime/sessions \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"agent_id":"agt_...","voice":"priya"}'
+  -d '{
+    "name": "Priya",
+    "voice": "priya",
+    "prompt": "You collect overdue EMIs. Be warm and brief.",
+    "greeting": "Hi, this is Priya from the bank."
+  }'
 
 # Then connect (ephemeral secret from client_secret.value):
 # wss://x.kupe.in/v1/realtime?model=kupe-realtime&client_secret=...
@@ -94,7 +106,7 @@ curl -X POST https://x.kupe.in/v1/realtime/sessions \
 
 </CodeGroup>
 
-The WebSocket speaks OpenAI-compatible JSON. Audio is **PCM16 mono at 24 kHz**. See [Realtime](/realtime) for client and server events.
+The WebSocket speaks OpenAI-compatible JSON. Audio is **PCM16 mono at 24 kHz**. See [Realtime](/realtime) for client and server events. SDK-only walkthroughs: [Python](/sdk/python/realtime) and [TypeScript](/sdk/typescript/realtime).
 
 ## 4. List your agents
 

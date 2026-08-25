@@ -24,6 +24,9 @@ Push to `main` to publish `docs.kupe.in` (connected docs host).
 | --- | --- |
 | `docs.json` | Theme, nav, OpenAPI playground |
 | `openapi.yaml` | Curated public OpenAPI |
+| `sdk/python/` | Python SDK (`pip install kupe`) |
+| `sdk/typescript/` | TypeScript SDK (`npm install kupe-sdk`) |
+| `guides/` | Platform guides (features, prompting, KYC, databases, …) |
 | `kupe-mcp.mdx` | Kupe MCP install (`/kupe-mcp`) |
 | `custom.css` | Brand matrix + MCP brand cards |
 | `images/brands/` | Cursor / Claude / Codex logos |

@@ -1,0 +1,62 @@
+---
+title: Python realtime
+description: Mint a kupe-realtime session with pip install kupe and stream one text turn over WebSocket.
+---
+
+Mint with `client.realtime.sessions.create`, then `client.realtime.connect(session)`. Audio is PCM16 mono **24 kHz**. Model `kupe-realtime`. Web-only — no telephony minutes.
+
+Identify the agent with **name** or **agent_id**. A new name creates the agent with prompt, greeting, voice, and tools/mcp. Pass **voice** (sanitized name) or **voice_id** — either one (copy the id from the voice library).
+
+## Terminal
+
+```bash
+pip install kupe
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+python - <<'PY'
+from kupe import Kupe
+
+client = Kupe()
+session = client.realtime.sessions.create(
+    name="Priya",
+    voice="priya",
+    prompt="You collect overdue EMIs. Be warm and brief.",
+    greeting="Hi, this is Priya from the bank.",
+)
+print("ws", session.websocket_url)
+
+with client.realtime.connect(session) as rt:
+    rt.send_text("Remind them EMI is due tomorrow.")
+    for event in rt:
+        if event.type == "response.output_audio_transcript.done":
+            print("agent:", event.transcript)
+            break
+        if event.type == "error":
+            print("error:", event)
+            break
+PY
+```
+
+Save the same code as `realtime_turn.py` and run `python realtime_turn.py`.
+
+Existing agent from the console:
+
+```python
+session = client.realtime.sessions.create(
+    agent_id="agt_...",
+    voice="priya",
+)
+```
+
+## Events you will see
+
+| `event.type` | Meaning |
+| --- | --- |
+| `session.created` | Handshake done |
+| `response.output_audio.delta` | Base64 PCM16 chunk (`event.delta`) |
+| `response.output_audio_transcript.done` | Final spoken text (`event.transcript`) |
+| `response.done` | Turn finished, includes usage |
+| `error` | Protocol or runtime error |
+
+`send_text` sends `conversation.item.create` then `response.create`. Mic path: `rt.append_audio(pcm16_bytes)` at 24 kHz.
+
+Full event tables: [Realtime WebSocket](/realtime).

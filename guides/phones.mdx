@@ -42,7 +42,7 @@ curl -X POST https://x.kupe.in/v1/orgs/org_.../plivo/numbers/purchase \
 
 </CodeGroup>
 
-`country_iso` is `US` or `IN`. India pattern is digits after country code (`80` Bengaluru, `22` Mumbai). US numbers can be purchased immediately; IN numbers need an **accepted** compliance application first:
+`country_iso` is `US` or `IN`. India pattern is digits after country code (`80` Bengaluru, `22` Mumbai). US numbers can be purchased immediately; IN numbers need an **accepted** compliance application first — see [India KYC](/guides/kyc):
 
 - `GET /v1/orgs/{org_id}/plivo/compliance/requirements`
 - `GET /v1/orgs/{org_id}/plivo/compliance`

@@ -1,0 +1,97 @@
+---
+title: Voice agent prompting
+description: Write spoken system prompts — Identity through Closing, under ~1000 tokens, for the ear.
+---
+
+Voice agents are spoken aloud (STT → LLM → TTS). Write for the ear and the clock, not a chatbot essay. The caller hears one stream and will interrupt.
+
+## Hard rules
+
+- Agent **name** is a real first name (Kavya, Rohan, Meera), never a job-title slug.
+- `system_prompt` under **~1000 tokens** (~750 words). Catalogs and FAQs go in a [knowledge base](/guides/databases), attached with `config.knowledge_base_ids`.
+- `greeting` is **one spoken line** in the default language. No markdown.
+- Per-call facts use `{{camelCase}}` in the prompt and greeting, with matching `config.variables`.
+- Capture after the call with [databases](/guides/databases) / output variables — not a wall of “extract X” in the prompt.
+
+Two failure modes: bot-recital (feature lists) and cold-transactional (robotic). A good agent is short, warm, and one-thing-at-a-time. If a turn could be an SMS, it is too long.
+
+## Fixed section order
+
+Title Case headers (`Identity`, not `IDENTITY`). Do not reorder or add sections.
+
+1. Identity
+2. Objective
+3. Language Policy
+4. Voice Style
+5. Grounded Knowledge
+6. Conversation Flow
+7. Guardrails
+8. Tools
+9. Fallbacks
+10. Closing
+
+**Identity.** Open as “You are \{name\}…”. Mood and way of speaking, not a job description. Two or three traits. Use `{{companyName}}` when the company varies.
+
+**Objective.** One primary goal; optional one secondary. If a target must be captured (promise date), the agent must ask for it on the call.
+
+**Language Policy.** Default language, then follow the user. Treat Hinglish as a real language — mirror their mix. Spell out numbers in-language. Short sentences. Respectful register (`aap`) for cold outbound.
+
+**Voice Style.** One or two sentences per turn, one idea, then stop and listen. Never stack two questions. No markdown, bullets, emoji, or digits. Speak money, dates, and phone numbers in words. Acknowledge, then answer. If interrupted, drop the line.
+
+**Grounded Knowledge.** The only facts it may state, plus `{{placeholders}}`. Unknown → do not guess.
+
+**Conversation Flow.** Intent per stage, never a word-for-word script. Open → one discovery question → one benefit → objection → one next step.
+
+**Guardrails.** No promises outside the objective. First clear no after one attempt is respected. Honor DND / opt-out instantly. If asked “are you a bot?”, answer honestly and briefly. Never ask for passwords, OTPs, full card, UPI PIN, or full bank numbers.
+
+**Tools.** One trigger plus a spoken filler while the tool runs so the line is never silent. On failure, follow up — never invent the result.
+
+**Fallbacks.** Unknown: confirm and follow up. Angry: short and sincere, offer a human. Voicemail: short message, one callback, end. Silence of ~2–3s: one re-prompt, then close.
+
+**Closing.** Confirm next step and time. Use their name once. Warm sign-off. Stop.
+
+## Greeting, memory, dynamic greeting
+
+- `greeting` — one line; `{{recipientName}}` when you know them.
+- `config.memory` — `{enabled, retention_days, max_calls, scope}`. On by default; summaries keyed to caller phone.
+- `config.dynamic_greeting` — `{enabled, instructions}`. Off by default.
+
+Kai follows these rules on `create_agent` / `update_agent`. Do not commit a version unless asked.
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+client.agents.create(
+    name="Meera",
+    greeting="Hi {{recipientName}}, this is Meera from {{companyName}}.",
+    system_prompt="You are Meera…",  # Identity → Closing, under ~1000 tokens
+    config={
+        "variables": [
+            {"key": "recipientName", "description": "Caller name", "example": "Rahul"},
+            {"key": "companyName", "description": "Brand on the call", "example": "Kupe Bank"},
+        ]
+    },
+)
+```
+
+```typescript TypeScript
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe();
+await kupe.agents.create({
+  name: "Meera",
+  greeting: "Hi {{recipientName}}, this is Meera from {{companyName}}.",
+  system_prompt: "You are Meera…",
+  config: {
+    variables: [
+      { key: "recipientName", description: "Caller name", example: "Rahul" },
+      { key: "companyName", description: "Brand on the call", example: "Kupe Bank" },
+    ],
+  },
+});
+```
+
+</CodeGroup>

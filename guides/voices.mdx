@@ -3,7 +3,7 @@ title: Voices
 description: Catalog voices, clones, preview audio, and billed speak.
 ---
 
-Voices are addressed by **sanitized name** on realtime sessions (`priya`, not a vendor UUID). `GET /v1/voices` returns catalog rows, public clones, and — when you send a user JWT — your private clones.
+Voices are addressed by **sanitized name** (`priya`) **or voice id** on realtime sessions. Copy the id from the voice library. Cloned names must be unique. `GET /v1/voices` returns catalog rows, public clones, and — when you send a user JWT — your private clones.
 
 `GET /v1/providers` lists STT, LLM, and TTS catalogs (including `defaults`). Brand names are Kupe-facing (`kupe` rather than the upstream vendor).
 
@@ -47,8 +47,8 @@ Query `provider` (brand name) or `provider_id` (catalog UUID). Omit both to list
 
 These are **JWT-only**. API keys cannot own a voice (`403`). SDKs still expose the methods and raise a typed error if you call them with a key.
 
-- `POST /v1/voices/clone` — `multipart/form-data`: `name`, `sample` (≤ 25 MB), optional `is_public`
-- `PATCH /v1/voices/{voice_id}` — rename or visibility
+- `POST /v1/voices/clone` — `multipart/form-data`: `name` (unique after sanitize), `sample` (≤ 25 MB), optional `is_public`. Duplicate names return `409`.
+- `PATCH /v1/voices/{voice_id}` — rename or visibility. Rename must stay unique (`409` if taken).
 - `GET /v1/voices/{voice_id}/usage` — how many live agents still reference this clone
 - `DELETE /v1/voices/{voice_id}` — optional `fallback_voice_id` for agents that still use it
 

@@ -1,11 +1,38 @@
 ---
 title: Databases
-description: Call databases, rows, export, and knowledge bases for RAG.
+description: Call databases — post-call tables, columns, attach agents, rows, export, and destinations. Knowledge bases for RAG.
 ---
 
-**Call databases** store structured rows your agents can read and write during a conversation. **Knowledge bases** hold files for RAG search. Both are project-scoped.
+**Call databases** are tables of structured data extracted after every attached agent's call. They are not a generic SQL store and not the knowledge base.
 
-## Call databases
+- **Databases** — one row per finished call (web, inbound, outbound).
+- **Knowledge bases** — files for mid-call RAG search.
+
+Requires `feature_databases`. Console: **Monitor → Databases**, or attach a database on the agent editor.
+
+## How a row is written
+
+1. Create a database with a name and columns (`fields`).
+2. Attach one or more agents.
+3. When a call hangs up, Kupe runs post-call extraction and inserts **one row per session**.
+
+Always-present columns:
+
+| Column | Meaning |
+| --- | --- |
+| `who_called` | Caller phone or web participant |
+| `started_at` | Call start |
+| `duration_seconds` | Length |
+
+Schema you define, plus built-in analysis fields `summary` (string) and `success` (boolean). Custom fields:
+
+```json
+{ "name": "promise_date", "type": "string", "description": "Date they promised to pay" }
+```
+
+`type` is `string` | `number` | `boolean` | `enum` (enum needs `enum_values`). Unique on `(database_id, session_id)`.
+
+## Create and attach
 
 <CodeGroup>
 
@@ -13,73 +40,120 @@ description: Call databases, rows, export, and knowledge bases for RAG.
 from kupe import Kupe
 
 client = Kupe()
-me = client.me()
 db = client.databases.create(
-    org_id=me.org_id,
-    project_id=me.project_id,
-    name="Loans",
+    name="Collections outcomes",
+    description="Promise dates from EMI calls",
+    fields=[
+        {"name": "promise_date", "type": "string", "description": "Date they promised to pay"},
+        {"name": "amount", "type": "number", "description": "Amount confirmed"},
+        {
+            "name": "intent",
+            "type": "enum",
+            "description": "Will pay / dispute / DND",
+            "enum_values": ["will_pay", "dispute", "dnd"],
+        },
+    ],
 )
 client.databases.attach_agent(db.id, agent_id="agt_...")
-rows = client.databases.rows.list(db.id, q="pending")
+rows = client.databases.rows(db.id, q="pending")
 ```
 
 ```typescript TypeScript
 import { Kupe } from "kupe-sdk";
 
 const kupe = new Kupe();
-const me = await kupe.me();
 const db = await kupe.databases.create({
-  org_id: me.org_id!,
-  project_id: me.project_id!,
-  name: "Loans",
+  name: "Collections outcomes",
+  description: "Promise dates from EMI calls",
+  fields: [
+    { name: "promise_date", type: "string", description: "Date they promised to pay" },
+    { name: "amount", type: "number", description: "Amount confirmed" },
+  ],
 });
-await kupe.databases.attachAgent(db.id, { agent_id: "agt_..." });
+await kupe.databases.agents.attach(db.id, { agent_id: "agt_..." });
 const rows = await kupe.databases.rows.list(db.id, { q: "pending" });
 ```
 
 ```bash cURL
-curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../databases \
+ORG=$(curl -s https://x.kupe.in/v1/me -H "Authorization: Bearer sk-kupe-YOUR_KEY" | jq -r .org_id)
+PRJ=$(curl -s https://x.kupe.in/v1/me -H "Authorization: Bearer sk-kupe-YOUR_KEY" | jq -r .project_id)
+
+curl -X POST "https://x.kupe.in/v1/orgs/${ORG}/projects/${PRJ}/databases" \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Loans"}'
-
-curl "https://x.kupe.in/v1/databases/db_.../rows?q=pending" \
-  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+  -d '{
+    "name": "Collections outcomes",
+    "fields": [
+      {"name": "promise_date", "type": "string", "description": "Date they promised to pay"}
+    ]
+  }'
 ```
 
 </CodeGroup>
 
-Useful routes:
+You can also pass `agent_ids` on create to attach in the same request.
 
-- List / create: `GET|POST /v1/orgs/{org_id}/projects/{project_id}/databases`
-- Get / patch / archive: `/v1/databases/{database_id}`
-- Agents: `GET|POST /v1/databases/{id}/agents`, `DELETE .../agents/{agent_id}`
-- Rows: `GET /v1/databases/{id}/rows` (cursor + `q`)
-- Export: `GET /v1/databases/{id}/export?format=csv|json|ndjson|zip`
-- Reverse: `GET /v1/agents/{agent_id}/databases`
+## Routes
 
-Requires `feature_databases`.
+| Action | Path |
+| --- | --- |
+| List / create | `GET\|POST /v1/orgs/{org_id}/projects/{project_id}/databases` |
+| Get / patch / archive | `/v1/databases/{database_id}` |
+| Agents | `GET\|POST /v1/databases/{id}/agents`, `DELETE .../agents/{agent_id}` |
+| Reverse | `GET /v1/agents/{agent_id}/databases` |
+| Rows (keyset) | `GET /v1/databases/{id}/rows?cursor=&limit=&q=` |
+| Export | `GET /v1/databases/{id}/export?format=csv\|json\|ndjson\|zip` |
 
-## Knowledge bases
+Patch `fields` to replace the extraction schema for every attached agent.
 
-Upload files, then search:
+## Destinations
+
+After a row is written you can fan it out. Patch `destinations`:
+
+```json
+[
+  { "kind": "webhook", "url": "https://example.com/hooks/calls" },
+  { "kind": "tool", "tool_id": "tool_..." },
+  { "kind": "composio", "composio_slug": "hubspot", "connected_account_id": "ca_..." }
+]
+```
+
+## Rows
+
+Each row includes `values` (JSON of schema fields), `status` (`pending` | `skipped` | `completed` | `failed`), and `sync_error`. Search `q` matches caller and values text. The console sorts, filters empty columns, hides columns, and exports.
 
 <CodeGroup>
 
 ```python Python
-kb = client.knowledge_bases.create(
-    org_id=me.org_id, project_id=me.project_id, name="Policy"
-)
+blob = client.databases.export(db.id, format="csv")
+open("calls.csv", "wb").write(blob)
+```
+
+```typescript TypeScript
+const buf = await kupe.databases.rows.export(db.id, { format: "csv" });
+```
+
+```bash cURL
+curl "https://x.kupe.in/v1/databases/db_.../export?format=csv" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" -o calls.csv
+```
+
+</CodeGroup>
+
+## Knowledge bases
+
+Separate product for RAG files. Attach to an agent with `config.knowledge_base_ids` — do not dump FAQs into the system prompt.
+
+<CodeGroup>
+
+```python Python
+kb = client.knowledge_bases.create(name="Policy")
 client.knowledge_bases.files.upload(kb.id, file=open("policy.pdf", "rb"))
 hits = client.knowledge_bases.search(kb.id, query="prepayment charges", top_k=5)
 ```
 
 ```typescript TypeScript
-const kb = await kupe.knowledgeBases.create({
-  org_id: me.org_id!,
-  project_id: me.project_id!,
-  name: "Policy",
-});
+const kb = await kupe.knowledgeBases.create({ name: "Policy" });
 await kupe.knowledgeBases.files.upload(kb.id, file);
 const hits = await kupe.knowledgeBases.search(kb.id, {
   query: "prepayment charges",
@@ -88,20 +162,13 @@ const hits = await kupe.knowledgeBases.search(kb.id, {
 ```
 
 ```bash cURL
-curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../knowledge-bases \
+curl -X POST "https://x.kupe.in/v1/orgs/${ORG}/projects/${PRJ}/knowledge-bases" \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name":"Policy"}'
-
-curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../knowledge-bases/kb_.../search \
-  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"query":"prepayment charges","top_k":5}'
 ```
 
 </CodeGroup>
-
-Ingest status webhooks are internal and omitted from this spec.
 
 ## Audio assets
 

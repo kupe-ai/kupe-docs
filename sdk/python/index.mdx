@@ -1,0 +1,114 @@
+---
+title: Python SDK
+description: pip install kupe — install, authenticate, list agents, and run a realtime turn.
+---
+
+Official Python client for the Kupe voice API.
+
+```bash
+pip install kupe
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+```
+
+Import `from kupe import Kupe`. Default host is `https://x.kupe.in`. Optional `KUPE_BASE_URL`. Paths always join as `{base}/v1/...`.
+
+<Note>
+  Create a project key in [hub.kupe.in](https://hub.kupe.in). It looks like `sk-kupe-...`.
+</Note>
+
+## Run a realtime turn (terminal)
+
+This is a complete script. Paste it after installing and exporting the key.
+
+```bash
+pip install kupe
+export KUPE_API_KEY=sk-kupe-YOUR_KEY
+python - <<'PY'
+from kupe import Kupe
+
+client = Kupe()
+session = client.realtime.sessions.create(
+    name="Priya",
+    voice="priya",
+    prompt="You collect overdue EMIs. Be warm and brief.",
+    greeting="Hi, this is Priya from the bank.",
+)
+print("session", session.agent_id)
+with client.realtime.connect(session) as rt:
+    rt.send_text("Hi Priya — remind this customer their EMI is due tomorrow.")
+    for event in rt:
+        if event.type == "response.output_audio_transcript.done":
+            print("agent:", event.transcript)
+            break
+        if event.type == "error":
+            print("error:", event)
+            break
+PY
+```
+
+Reuse an existing agent from the editor with `agent_id="agt_..."` instead of `name=`. Pass `voice="priya"` or `voice_id="..."` (copy from the voice library). See [Realtime](/sdk/python/realtime).
+
+## Who am I
+
+API keys are scoped to one org and one project. `GET /v1/me` fills them in, so most calls need no ids.
+
+```python
+from kupe import Kupe
+
+client = Kupe()
+me = client.me()
+print(me.org_id, me.project_id, me.auth)
+```
+
+## List agents
+
+```python
+from kupe import Kupe
+
+client = Kupe()
+page = client.agents.list()
+for agent in page.items:
+    print(agent.id, agent.name)
+```
+
+## Create an agent
+
+```python
+from kupe import Kupe
+
+client = Kupe()
+agent = client.agents.create(
+    name="Meera",
+    system_prompt="You are Meera, a warm collections specialist. Be brief.",
+    greeting="Hi, this is Meera from the bank.",
+)
+print(agent.id)
+```
+
+Write spoken prompts — see [Voice agent prompting](/guides/prompting).
+
+## Constructor
+
+```python
+from kupe import Kupe
+
+client = Kupe(
+    api_key="sk-kupe-YOUR_KEY",
+    base_url="https://x.kupe.in",  # optional
+)
+```
+
+| Env | Required | Default |
+| --- | --- | --- |
+| `KUPE_API_KEY` | unless you pass `api_key=` | — |
+| `KUPE_BASE_URL` | no | `https://x.kupe.in` |
+
+Do not put `/v1` in `KUPE_BASE_URL`.
+
+## Resources
+
+`client.agents`, `realtime`, `sessions`, `inbound`, `campaigns`, `recipient_lists`, `tools`, `composio`, `analyses`, `databases`, `knowledge_bases`, `phones`, `voices`, `providers`, `logs`, `billing`, `usage`, `orgs`, `projects`.
+
+Voice clone / patch / delete need a user JWT. Payments are dashboard-only.
+
+Next: [Realtime](/sdk/python/realtime) · [Quickstart](/quickstart) · [API reference](/api-reference)
