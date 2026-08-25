@@ -59,4 +59,36 @@ session = client.realtime.sessions.create(
 
 `send_text` sends `conversation.item.create` then `response.create`. Mic path: `rt.append_audio(pcm16_bytes)` at 24 kHz.
 
+## Echo: speakers vs headset
+
+If you play the agent's audio through **open speakers** next to the mic, the
+mic records the agent and `append_audio` sends its own voice back as user
+speech. The agent then answers itself, and its greeting shows up in the
+transcript as a user turn.
+
+Pass `echo_suppression="half_duplex"` to drop mic frames while the agent is
+still speaking:
+
+```python
+with client.realtime.connect(session, echo_suppression="half_duplex") as rt:
+    ...
+    rt.append_audio(pcm16_bytes)   # dropped while the agent talks
+```
+
+| Option | Use when | Barge-in |
+| --- | --- | --- |
+| `"none"` (default) | Headset, phone line, or a browser `getUserMedia({echoCancellation: true})` stream — echo is already cancelled | Yes |
+| `"half_duplex"` | Open speakers, e.g. a laptop running a terminal script | **No** — the server does not hear you until the agent stops |
+
+`append_audio` returns `True` when the frame was sent and `False` when it was
+dropped; `rt.suppressed_frames` counts the drops, and `rt.agent_is_speaking`
+exposes the gate. Pass `force=True` to bypass it for one frame. Tune the hold
+after playback ends with `echo_tail_ms` (default `250`).
+
+<Note>
+The gate advances only while something is iterating the connection, since it
+is driven by `response.output_audio.delta` sizes. Keep your reader loop
+running — a common mistake is reading events only after the mic loop ends.
+</Note>
+
 Full event tables: [Realtime WebSocket](/realtime).

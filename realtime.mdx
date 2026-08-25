@@ -229,6 +229,24 @@ Text-turn example (what `send_text` encodes):
 
 Mic path: send `input_audio_buffer.append` frames; server VAD emits speech start/stop and runs the turn.
 
+<Warning>
+**Do not send the agent's own audio back.** If you play `response.output_audio.delta`
+through open speakers next to the mic, your `input_audio_buffer.append` frames
+will contain the agent's voice. Server VAD treats that as the caller speaking,
+so the agent interrupts and answers itself, and its own lines appear as user
+transcripts.
+
+Use input that already has acoustic echo cancellation (a headset, a phone
+line, or `getUserMedia({ audio: { echoCancellation: true } })` in the browser),
+or stop sending `input_audio_buffer.append` while the agent's audio is still
+playing. Track that from the bytes you have queued for playback, not from the
+arrival of the last delta — deltas arrive faster than realtime. Suppressing
+the mic this way means the caller cannot barge in.
+
+Both SDKs implement this: `echo_suppression="half_duplex"` in Python,
+`echoSuppression: "half_duplex"` in TypeScript.
+</Warning>
+
 ## Server → client
 
 Every event has `event_id` and `type`. Audio deltas are base64 PCM16.

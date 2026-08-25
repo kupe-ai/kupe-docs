@@ -48,6 +48,10 @@ PY
 
 Reuse an existing agent from the editor with `agent_id="agt_..."` instead of `name=`. Pass `voice="priya"` or `voice_id="..."` (copy from the voice library). See [Realtime](/sdk/python/realtime).
 
+Streaming mic audio instead of text? If the agent plays through open speakers,
+pass `echo_suppression="half_duplex"` so it does not hear and answer itself —
+see [Realtime](/sdk/python/realtime#echo-speakers-vs-headset).
+
 ## Who am I
 
 API keys are scoped to one org and one project. `GET /v1/me` fills them in, so most calls need no ids.

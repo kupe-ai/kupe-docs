@@ -82,4 +82,36 @@ node realtime.mjs
 
 `sendText` / `send_text` send `conversation.item.create` then `response.create`. Mic path: `rt.appendAudio(pcm16)` at 24 kHz.
 
+## Echo: speakers vs headset
+
+If you play the agent's audio through **open speakers** next to the mic, the
+mic records the agent and `appendAudio` sends its own voice back as user
+speech. The agent then answers itself, and its greeting shows up in the
+transcript as a user turn.
+
+Pass `echoSuppression: "half_duplex"` to drop mic chunks while the agent is
+still speaking:
+
+```ts
+const rt = await kupe.realtime.connect(session, { echoSuppression: "half_duplex" });
+
+rt.appendAudio(pcm16); // dropped while the agent talks
+```
+
+| Option | Use when | Barge-in |
+| --- | --- | --- |
+| `"none"` (default) | Headset, phone line, or a browser `getUserMedia({ echoCancellation: true })` stream — echo is already cancelled | Yes |
+| `"half_duplex"` | Open speakers, e.g. a Node script on a laptop | **No** — the server does not hear you until the agent stops |
+
+`appendAudio` returns `true` when the chunk was sent and `false` when it was
+dropped; `rt.suppressedChunks` counts the drops, and `rt.agentIsSpeaking`
+exposes the gate. Pass `{ force: true }` to bypass it for one chunk. Tune the
+hold after playback ends with `echoTailMs` (default `250`).
+
+<Note>
+In the browser you normally want the default `"none"`: request the mic with
+`getUserMedia({ audio: { echoCancellation: true } })` and the browser cancels
+the echo for you, keeping barge-in working.
+</Note>
+
 Full event tables: [Realtime WebSocket](/realtime).

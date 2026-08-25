@@ -53,6 +53,10 @@ EOF
 
 Or save as `realtime.mjs` and run `node realtime.mjs`. Reuse an existing agent with `agent_id`. Pass `voice` or `voice_id` (copy from the voice library). See [Realtime](/sdk/typescript/realtime).
 
+Streaming mic audio instead of text? If the agent plays through open speakers,
+pass `echoSuppression: "half_duplex"` so it does not hear and answer itself —
+see [Realtime](/sdk/typescript/realtime#echo-speakers-vs-headset).
+
 ## Who am I
 
 ```ts
