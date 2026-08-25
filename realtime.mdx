@@ -1,9 +1,9 @@
 ---
 title: Realtime WebSocket
-description: Mint a session, connect to wss://x.kupe.in/v1/realtime, and handle OpenAI-compatible events.
+description: Mint a session, connect to wss://x.kupe.in/agents/v1/realtime, and handle OpenAI-compatible events.
 ---
 
-Kupe Realtime is an OpenAI-shaped voice WebSocket. You mint an ephemeral session over HTTP, then attach to `wss://x.kupe.in/v1/realtime`.
+Kupe Realtime is an OpenAI-shaped voice WebSocket. You mint an ephemeral session over HTTP, then attach to `wss://x.kupe.in/agents/v1/realtime` (same agents host as telephony media — not the LiveKit root on `x.kupe.in`).
 
 The session always runs Kupe STT, TTS, and LLM. Voices are addressed by sanitized name (`priya`) **or** voice id (copy it from the voice library). Tools attached to the agent run server-side. This path is **web-only** — it does not write telephony minutes.
 
@@ -167,7 +167,7 @@ session = client.realtime.sessions.create(
 ## Connect
 
 ```
-wss://x.kupe.in/v1/realtime?model=kupe-realtime&client_secret={secret}
+wss://x.kupe.in/agents/v1/realtime?model=kupe-realtime&client_secret={secret}
 ```
 
 You can also send `Authorization: Bearer {secret}` on the WebSocket handshake instead of the query string. `ticket` is an alias for `client_secret`.
@@ -193,7 +193,7 @@ for await (const event of rt) {
 
 ```bash cURL
 # Use a WebSocket client. After minting:
-# wss://x.kupe.in/v1/realtime?model=kupe-realtime&client_secret=...
+# wss://x.kupe.in/agents/v1/realtime?model=kupe-realtime&client_secret=...
 ```
 
 </CodeGroup>
