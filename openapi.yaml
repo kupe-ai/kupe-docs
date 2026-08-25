@@ -6836,13 +6836,13 @@ components:
           - type: string
           - type: 'null'
           title: Window Start
-          description: HH:MM local dial-window start
+          description: "HH:MM local dial-window start"
         window_end:
           anyOf:
           - type: string
           - type: 'null'
           title: Window End
-          description: HH:MM local dial-window end
+          description: "HH:MM local dial-window end"
         timezone:
           type: string
           title: Timezone
@@ -7496,7 +7496,7 @@ components:
           - type: string
           - type: 'null'
           title: Agent Id
-          description: Existing agent id. Alias: id.
+          description: "Existing agent id. Alias: id."
         name:
           anyOf:
           - type: string
@@ -7524,19 +7524,19 @@ components:
           - type: string
           - type: 'null'
           title: Voice
-          description: Voice name or voice id. Alias: voice_id.
+          description: "Voice name or voice id. Alias: voice_id."
         voice_id:
           anyOf:
           - type: string
           - type: 'null'
           title: Voice Id
-          description: Alias for voice — library voice_id or row id.
+          description: "Alias for voice — library voice_id or row id."
         prompt:
           anyOf:
           - type: string
           - type: 'null'
           title: Prompt
-          description: System prompt. Alias: instructions.
+          description: "System prompt. Alias: instructions."
         instructions:
           anyOf:
           - type: string
@@ -7547,7 +7547,7 @@ components:
           - type: string
           - type: 'null'
           title: Greeting
-          description: Spoken first message. Alias: greetings.
+          description: "Spoken first message. Alias: greetings."
         greetings:
           anyOf:
           - type: string
@@ -8303,12 +8303,12 @@ components:
         start:
           type: string
           title: Start
-          description: HH:MM local
+          description: "HH:MM local"
           default: 09:00
         end:
           type: string
           title: End
-          description: HH:MM local
+          description: "HH:MM local"
           default: '18:00'
         after_hours_message:
           type: string
