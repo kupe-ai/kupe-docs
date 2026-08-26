@@ -89,13 +89,13 @@ mic records the agent and `appendAudio` sends its own voice back as user
 speech. The agent then answers itself, and its greeting shows up in the
 transcript as a user turn.
 
-Pass `echoSuppression: "half_duplex"` to drop mic chunks while the agent is
+Pass `echoSuppression: "half_duplex"` to mute the mic while the agent is
 still speaking:
 
 ```ts
 const rt = await kupe.realtime.connect(session, { echoSuppression: "half_duplex" });
 
-rt.appendAudio(pcm16); // dropped while the agent talks
+rt.appendAudio(pcm16); // sent as silence while the agent talks
 ```
 
 | Option | Use when | Barge-in |
@@ -104,9 +104,13 @@ rt.appendAudio(pcm16); // dropped while the agent talks
 | `"half_duplex"` | Open speakers, e.g. a Node script on a laptop | **No** — the server does not hear you until the agent stops |
 
 `appendAudio` returns `true` when the chunk was sent and `false` when it was
-dropped; `rt.suppressedChunks` counts the drops, and `rt.agentIsSpeaking`
+muted; `rt.suppressedChunks` counts the muted chunks, and `rt.agentIsSpeaking`
 exposes the gate. Pass `{ force: true }` to bypass it for one chunk. Tune the
 hold after playback ends with `echoTailMs` (default `250`).
+
+A muted chunk is still sent, as silence. The server runs streaming VAD and STT
+over a continuous audio stream, so sending nothing at all would stall turn
+detection and the agent would stop hearing you even after it stopped talking.
 
 <Note>
 In the browser you normally want the default `"none"`: request the mic with

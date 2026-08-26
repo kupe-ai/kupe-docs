@@ -21,6 +21,7 @@ Always-present columns:
 | Column | Meaning |
 | --- | --- |
 | `who_called` | Caller phone or web participant |
+| `direction` | `inbound` (incoming), `outbound`, or `web` |
 | `started_at` | Call start |
 | `duration_seconds` | Length |
 
@@ -102,6 +103,7 @@ You can also pass `agent_ids` on create to attach in the same request.
 | Agents | `GET\|POST /v1/databases/{id}/agents`, `DELETE .../agents/{agent_id}` |
 | Reverse | `GET /v1/agents/{agent_id}/databases` |
 | Rows (keyset) | `GET /v1/databases/{id}/rows?cursor=&limit=&q=` |
+| Patch / delete a row | `PATCH\|DELETE /v1/databases/{id}/rows/{row_id}` |
 | Export | `GET /v1/databases/{id}/export?format=csv\|json\|ndjson\|zip` |
 
 Patch `fields` to replace the extraction schema for every attached agent.
@@ -120,7 +122,7 @@ After a row is written you can fan it out. Patch `destinations`:
 
 ## Rows
 
-Each row includes `values` (JSON of schema fields), `status` (`pending` | `skipped` | `completed` | `failed`), and `sync_error`. Search `q` matches caller and values text. The console sorts, filters empty columns, hides columns, and exports.
+Each row includes `direction` (`web` | `inbound` | `outbound`), `values` (JSON of schema fields), `status` (`pending` | `skipped` | `completed` | `failed`), and `sync_error`. Search `q` matches caller, direction, and values text. The console sorts, filters empty columns, hides columns, and exports. Right-click a row to edit values, change a column type, or delete it.
 
 <CodeGroup>
 

@@ -238,10 +238,14 @@ transcripts.
 
 Use input that already has acoustic echo cancellation (a headset, a phone
 line, or `getUserMedia({ audio: { echoCancellation: true } })` in the browser),
-or stop sending `input_audio_buffer.append` while the agent's audio is still
-playing. Track that from the bytes you have queued for playback, not from the
-arrival of the last delta — deltas arrive faster than realtime. Suppressing
-the mic this way means the caller cannot barge in.
+or send **silence** in `input_audio_buffer.append` while the agent's audio is
+still playing. Track that from the bytes you have queued for playback, not from
+the arrival of the last delta — deltas arrive faster than realtime.
+
+Keep sending frames: server VAD and STT run over a continuous stream, so simply
+stopping the appends stalls turn detection and the agent stops hearing the
+caller even after it finishes speaking. Muting this way also means the caller
+cannot barge in.
 
 Both SDKs implement this: `echo_suppression="half_duplex"` in Python,
 `echoSuppression: "half_duplex"` in TypeScript.
