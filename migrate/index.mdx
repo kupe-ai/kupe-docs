@@ -64,6 +64,39 @@ description: Move from api.kupe.in / app.kupe.in to x.kupe.in and hub.kupe.in. S
 6. Move tools to org tools — [Tools](/migrate/tools).
 7. Point browsers at [Realtime](/realtime), not App media sockets.
 
+## Prefer the SDK
+
+Kupe App had no first-party SDK. On Hub, use **Python first** (`pip install kupe`), or **npm** (`kupe-sdk`) if you are on TypeScript. Both talk to `https://x.kupe.in` with `KUPE_API_KEY` / `sk-kupe-...`. Full guides: [Python](/sdk/python) · [TypeScript](/sdk/typescript).
+
+<CodeGroup>
+
+```bash Python
+pip install kupe
+```
+
+```bash npm
+npm install kupe-sdk
+```
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()  # KUPE_API_KEY=sk-kupe-...
+me = client.me()
+# me.org_id, me.project_id — use these on every rewrite
+```
+
+```typescript TypeScript
+import { Kupe } from "kupe-sdk";
+
+const kupe = new Kupe(); // KUPE_API_KEY or constructor key
+const me = await kupe.me();
+```
+
+</CodeGroup>
+
+IDE agents can use [Kupe MCP](/kupe-mcp) (`http://mcp.kupe.in/mcp`) with the same key instead of hand-writing cURL.
+
 <CardGroup cols={2}>
   <Card title="Hosts and auth" icon="key" href="/migrate/hosts-auth">
     Hosts, headers, `GET /v1/me`.
