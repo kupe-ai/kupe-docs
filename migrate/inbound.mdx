@@ -1,0 +1,80 @@
+---
+title: Inbound deployments
+description: Milli phone-number mappings become inbound deployments with availability windows.
+---
+
+Milli inbound was a **mapping row**: agent (or workflow) + `phone_number_id` + optional webhook URL.
+
+Kupe inbound is a **deployment**: agent + telephony account + name + status + **availability window**. Calls outside the window are not connected. Requires `feature_inbound`. See [Inbound](/guides/inbound).
+
+## Create
+
+Milli `POST /api/v1/phone/mapping` body (`AgentPhoneMappingCreate`): `agent_id` **xor** `workflow_id`, `phone_number_id`, optional `webhook_url`, `config_source`, `user_id`.
+
+Kupe `POST /v1/inbound` requires `org_id`, `project_id`, `agent_id`, `telephony_account_id`, `name`. Optional `status` (`draft` | `active` | `paused`) and `availability`.
+
+There is **no** `workflow_id`. Milli `POST /api/v1/phone/mapping/workflow` has no replacement.
+
+<CodeGroup>
+
+```bash Milli
+curl -X POST https://api.kupe.in/api/v1/phone/mapping \
+  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent_id": "UUID",
+    "phone_number_id": "UUID"
+  }'
+```
+
+```bash Kupe
+curl -X POST https://x.kupe.in/v1/inbound \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "org_id":"org_...","project_id":"prj_...",
+    "agent_id":"agt_...","telephony_account_id":"tel_...",
+    "name":"Collections DID","status":"active",
+    "availability":{
+      "always": false,
+      "timezone": "Asia/Kolkata",
+      "days_of_week": [1, 2, 3, 4, 5],
+      "start": "09:00",
+      "end": "18:00",
+      "after_hours_message": "Call back during business hours."
+    }
+  }'
+```
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+me = client.me()
+dep = client.inbound.create(
+    org_id=me.org_id,
+    project_id=me.project_id,
+    agent_id="agt_...",
+    telephony_account_id="tel_...",
+    name="Collections DID",
+    status="active",
+    availability={"always": True, "timezone": "Asia/Kolkata"},
+)
+```
+
+</CodeGroup>
+
+`availability.always: true` (default) ignores days and hours. `days_of_week` is `0=Sun … 6=Sat`. Milli mappings had **no** hours window — that is new.
+
+## List / patch / delete
+
+| Milli | Kupe |
+| --- | --- |
+| `GET /api/v1/phone/mapping` | `GET /v1/orgs/{org_id}/projects/{project_id}/inbound` |
+| `GET .../mapping/agent/{agent_id}` | List inbound and filter `agent_id` |
+| `GET .../mapping/{phone_number_id}` | Match `telephony_account_id` / `from_number` on the deployment |
+| `PUT .../mapping/{mapping_id}` | `PATCH /v1/inbound/{deployment_id}` |
+| `DELETE .../mapping/{mapping_id}` | `DELETE /v1/inbound/{deployment_id}` |
+| `GET /v1/inbound/{deployment_id}` | New |
+
+Kupe-managed Plivo numbers get Answer / Hangup URLs attached on [purchase](/guides/phones). You do not pass `webhook_url` on the deployment.

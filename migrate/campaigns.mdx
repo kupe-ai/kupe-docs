@@ -1,0 +1,125 @@
+---
+title: Campaigns, batches, and people
+description: Milli campaigns, batch-call, and people-groups become Kupe batches and recipient lists.
+---
+
+Milli had **two** outbound products that both wrote `call_batches`:
+
+- `/api/v1/campaigns` — named campaign, attach people-groups, start/pause/resume/**stop**
+- `/api/v1/batch-call` — upload CSV/JSON, start by `batch_id`
+
+Kupe has **one**: `/v1/batches`, plus **recipient lists** instead of people-groups. See [Campaigns](/guides/campaigns).
+
+Requires `feature_outbound` / `feature_batch_calls`.
+
+## Create and start
+
+Milli `POST /api/v1/campaigns` body:
+
+| Field | Notes |
+| --- | --- |
+| `batch_name` | Required |
+| `agent_id` xor `workflow_id` xor `call_flow_id` | Workflows/call-flows are gone |
+| `caller_phone_id` | Milli `phone_numbers.id` |
+| `variable_names` | List of keys, values came from group rows |
+| `batch_size` | Concurrency-ish |
+| `max_retries` | Extra redials |
+| `status` | Default `not_started` |
+
+Kupe `POST /v1/batches`:
+
+| Field | Notes |
+| --- | --- |
+| `org_id`, `project_id` | Required |
+| `agent_id` | Required (`agt_...`) — no workflow |
+| `telephony_account_id` | Required (`tel_...`) |
+| `name` | Required |
+| `max_concurrent_calls` | Default `1` |
+| `retry_policy` | Object, not `max_retries` int |
+| `schedule` | Object (window), not Milli’s later patch |
+
+Status enum: `draft` → `running` → `paused` / `completed` / `cancelled`. Started campaigns **cannot be deleted** — `POST /v1/batches/{batch_id}/hide`.
+
+<CodeGroup>
+
+```bash Milli
+curl -X POST https://api.kupe.in/api/v1/campaigns \
+  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "batch_name": "EMI reminders",
+    "agent_id": "UUID",
+    "caller_phone_id": "UUID",
+    "batch_size": 2,
+    "max_retries": 1
+  }'
+
+curl -X POST https://api.kupe.in/api/v1/campaigns/CAMPAIGN_UUID/start \
+  -H "x-api-key: YOUR_MILLI_KEY"
+```
+
+```bash Kupe
+curl -X POST https://x.kupe.in/v1/batches \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "org_id":"org_...","project_id":"prj_...",
+    "agent_id":"agt_...","telephony_account_id":"tel_...",
+    "name":"EMI reminders","max_concurrent_calls":2
+  }'
+
+curl -X POST https://x.kupe.in/v1/batches/bat_.../contacts:bulk \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"contacts":[{"phone_number":"+9198XXXXXXXX"}]}'
+
+curl -X POST https://x.kupe.in/v1/batches/bat_.../start \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+## Lifecycle
+
+| Milli | Kupe |
+| --- | --- |
+| `POST .../start` | `POST /v1/batches/{batch_id}/start` |
+| `POST .../pause` | `POST /v1/batches/{batch_id}/pause` |
+| `POST .../resume` | `POST /v1/batches/{batch_id}/resume` |
+| `POST .../stop` | `POST /v1/batches/{batch_id}/cancel` |
+| `GET .../readiness` | No dedicated route — start fails if contacts/line missing |
+| `GET .../analytics` `/logs` `/live-calls` `/export` | `GET .../stats`, `.../events`, `.../call-analytics`; sessions via [Logs](/guides/logs) |
+| `GET .../live-calls/stream` (SSE) | No public SSE |
+| `POST /api/v1/campaigns/status-callback` | Provider webhook; not for your app |
+| `PATCH` campaign | `PATCH /v1/batches/{batch_id}` + `POST .../schedule` |
+| `DELETE` campaign | Hide if already run: `POST .../hide`. Draft-only delete is not the Milli semantics. |
+
+## People groups → recipient lists
+
+Milli `/api/v1/people-groups` was a spreadsheet (columns + rows + CSV upload) that you **attached** to a campaign (`POST .../campaigns/{id}/groups`).
+
+Kupe recipient lists:
+
+| Milli | Kupe |
+| --- | --- |
+| `POST /api/v1/people-groups` | `POST /v1/recipient-lists` (`org_id`, `project_id`, `name`) |
+| Columns / rows CRUD | `POST /v1/recipient-lists/{list_id}/members` and `.../members:bulk` |
+| `POST .../upload` `/upload-csv` `/upload/preview` | Bulk members JSON, or MCP sandbox CSV import |
+| `POST /campaigns/{id}/groups` | `POST /v1/batches/{batch_id}/contacts:from-list` |
+| Campaign members GET/DELETE | `GET/POST /v1/batches/{batch_id}/contacts` and `contacts:bulk` |
+
+Member `variables` is a map on each contact, not a separate `variable_names` array on the campaign.
+
+## `/api/v1/batch-call`
+
+Treat this as the same Kupe batch object:
+
+| Milli | Kupe |
+| --- | --- |
+| `POST /batch-call/create` | `POST /v1/batches` |
+| `POST /batch-call/upload/{id}` (CSV) / `upload-json` / `data/upsert` | `contacts:bulk` |
+| `POST /batch-call/start/{id}` | `POST /v1/batches/{id}/start` |
+| `GET /batch-call/me` | `GET /v1/orgs/{org_id}/projects/{project_id}/batches` |
+| `GET .../{id}/status` | `GET /v1/batches/{id}/stats` |
+| `POST /batch-call/status-callback` | Provider webhook; not public |
+| Super-admin `browse` / `user/{user_id}` | No equivalent |

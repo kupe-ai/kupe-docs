@@ -1,0 +1,20 @@
+---
+title: Catalog: logs
+description: Every mounted Milli path in this group (8 paths, 8 method+path pairs) and the Kupe replacement.
+---
+
+Sessions replace call-analytics and live-calls. Narrative: [logs](/migrate/logs).
+
+**8 unique Milli paths** in this table (8 method+path pairs). Inventory is the live FastAPI app, not `api_specification.yaml`.
+
+| Milli | Methods | Kupe | Notes |
+| --- | --- | --- | --- |
+| `/api/v1/call-analytics` | GET | `GET /v1/orgs/{org_id}/sessions` (+ transcript/recording/analysis) |  |
+| `/api/v1/call-analytics/admin/cleanup-recordings` | POST | No equivalent | Admin recording cleanup. |
+| `/api/v1/call-analytics/export` | GET | `GET /v1/orgs/{org_id}/sessions` (+ transcript/recording/analysis) |  |
+| `/api/v1/dashboard/{user_id}` | GET | No equivalent | Use Hub. |
+| `/api/v1/live-calls` | GET | Org sessions | No public SSE stream. |
+| `/api/v1/live-calls/events` | GET | Org sessions | No public SSE stream. |
+| `/api/v1/live-calls/records` | GET | Org sessions | No public SSE stream. |
+| `/api/v1/live-calls/stream` | GET | Org sessions | No public SSE stream. |
+

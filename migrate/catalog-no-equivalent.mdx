@@ -1,0 +1,98 @@
+---
+title: Catalog: no equivalent
+description: Every mounted Milli path in this group (84 paths, 110 method+path pairs) and the Kupe replacement.
+---
+
+Mounted Milli routes with no Kupe public twin — workflows, WhatsApp, n8n, admin, and similar. Narrative: [catalog-no-equivalent](/migrate/catalog-no-equivalent).
+
+**84 unique Milli paths** in this table (110 method+path pairs). Inventory is the live FastAPI app, not `api_specification.yaml`.
+
+| Milli | Methods | Kupe | Notes |
+| --- | --- | --- | --- |
+| `/api/v1/admin/blog-posts` | GET, POST | No equivalent | Blog CMS is not the voice API. |
+| `/api/v1/admin/blog-posts/{id}` | GET, PUT, DELETE | No equivalent | Blog CMS is not the voice API. |
+| `/api/v1/admin/custom-domains` | GET | No equivalent | Super-admin Milli control plane. |
+| `/api/v1/admin/custom-domains/{domain_id}` | PATCH, DELETE | No equivalent | Super-admin Milli control plane. |
+| `/api/v1/admin/custom-domains/{domain_id}/check` | POST | No equivalent | Super-admin Milli control plane. |
+| `/api/v1/admin/organizations/{org_id}/custom-domains` | POST | No equivalent | Super-admin Milli control plane. |
+| `/api/v1/admin/provider-resource-limits` | GET, POST | No equivalent | Super-admin Milli control plane. |
+| `/api/v1/admin/provider-resource-limits/{limit_id}` | GET, PATCH, DELETE | No equivalent | Super-admin Milli control plane. |
+| `/api/v1/call-flows` | GET, POST | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/constraints` | GET | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/full` | POST | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/validate-connection` | POST | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/{flow_id}` | GET, PATCH, DELETE | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/{flow_id}/edges` | POST | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/{flow_id}/edges/{edge_id}` | PATCH, DELETE | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/{flow_id}/nodes` | POST | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/{flow_id}/nodes/{node_id}` | PATCH, DELETE | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/call-flows/{flow_id}/sessions` | GET | Optional `flow_definition` on `AgentBody` | No node/edge CRUD. |
+| `/api/v1/concurrency/limits/org/{organization_id}` | GET, PUT | `/v1/rate-limit-configs` (new shape) | Not a per-user Milli twin. See API reference. |
+| `/api/v1/concurrency/limits/user/{organization_id}/{user_id}` | GET, PUT | `/v1/rate-limit-configs` (new shape) | Not a per-user Milli twin. See API reference. |
+| `/api/v1/kupe-builder/access` | GET | Hub Ask Kai / builder UI | No public builder stream API. |
+| `/api/v1/kupe-builder/generate-prompt` | POST | Hub Ask Kai / builder UI | No public builder stream API. |
+| `/api/v1/kupe-builder/sessions` | GET | Hub Ask Kai / builder UI | No public builder stream API. |
+| `/api/v1/kupe-builder/sessions/{session_id}` | GET, DELETE | Hub Ask Kai / builder UI | No public builder stream API. |
+| `/api/v1/kupe-builder/stream` | POST | Hub Ask Kai / builder UI | No public builder stream API. |
+| `/api/v1/kupe-builder/upload` | POST | Hub Ask Kai / builder UI | No public builder stream API. |
+| `/api/v1/n8n-workflow/admin/workflows` | GET | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/n8n-workflow/admin/workflows/{workflow_id}` | GET | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/n8n-workflow/user` | POST | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/n8n-workflow/user/create` | POST | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/n8n-workflow/user/workflows` | GET | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/n8n-workflow/user/{user_id}/workflows/{workflow_id}` | GET | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/n8n-workflow/user/{user_id}/workflows/{workflow_id}/activate` | POST | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/n8n-workflow/workflows/clone/{workflow_id}` | POST | No equivalent | n8n hosting was Milli-specific. |
+| `/api/v1/nango/connections/users/{user_id}` | GET | Composio org connections | Nango webhooks/session are gone. |
+| `/api/v1/nango/integration-config-schema` | GET | Composio org connections | Nango webhooks/session are gone. |
+| `/api/v1/nango/integration-connections/users/{user_id}` | GET | Composio org connections | Nango webhooks/session are gone. |
+| `/api/v1/nango/integrations` | GET | Composio org connections | Nango webhooks/session are gone. |
+| `/api/v1/nango/nango-webhook` | POST | Composio org connections | Nango webhooks/session are gone. |
+| `/api/v1/nango/session` | POST | Composio org connections | Nango webhooks/session are gone. |
+| `/api/v1/noise-assets` | GET | Agent `config` ambient / audio knobs if present on `AgentConfig` | No noise-asset catalog API. |
+| `/api/v1/notifications/admin` | GET | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/notifications/admin/send` | POST | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/notifications/admin/target-users` | GET | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/notifications/me` | GET | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/notifications/me/badges` | GET | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/notifications/me/read-all` | POST | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/notifications/{notification_id}/opened` | POST | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/notifications/{notification_id}/read` | POST | No equivalent | In-app inbox was Milli dashboard. |
+| `/api/v1/public/blog-posts` | GET | No equivalent | Blog CMS is not the voice API. |
+| `/api/v1/public/blog-posts/slug/{slug}` | GET | No equivalent | Blog CMS is not the voice API. |
+| `/api/v1/skills` | GET, POST | No equivalent | Fold instructions into `system_prompt` / tools. |
+| `/api/v1/skills/{skill_id}` | PUT, DELETE | No equivalent | Fold instructions into `system_prompt` / tools. |
+| `/api/v1/status/charts` | GET, POST | No equivalent | Internal status dashboard. |
+| `/api/v1/status/charts/{chart_id}` | DELETE | No equivalent | Internal status dashboard. |
+| `/api/v1/status/downtime` | GET, POST | No equivalent | Internal status dashboard. |
+| `/api/v1/status/downtime/{flag_id}` | DELETE | No equivalent | Internal status dashboard. |
+| `/api/v1/status/downtime/{flag_id}/resolve` | POST | No equivalent | Internal status dashboard. |
+| `/api/v1/status/failed-calls` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/status/messages` | GET, POST | No equivalent | Internal status dashboard. |
+| `/api/v1/status/overview` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/status/provider-calls` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/status/provider-overview` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/status/service-calls` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/status/snapshots` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/status/storage` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/status/traffic` | GET | No equivalent | Internal status dashboard. |
+| `/api/v1/ultravox-config/agents` | GET | No equivalent | Ultravox config API retired. |
+| `/api/v1/ultravox-config/create_agent` | POST | No equivalent | Ultravox config API retired. |
+| `/api/v1/ultravox-config/create_tool/{tool_id}` | POST | No equivalent | Ultravox config API retired. |
+| `/api/v1/ultravox-config/tool-mapping/{agent_id}` | POST | No equivalent | Ultravox config API retired. |
+| `/api/v1/ultravox-config/tool-mapping/{agent_id}/{tool_id}` | DELETE | No equivalent | Ultravox config API retired. |
+| `/api/v1/ultravox-config/tools/{tool_id}` | DELETE | No equivalent | Ultravox config API retired. |
+| `/api/v1/ultravox-config/update_agent/{agent_id}` | PATCH | No equivalent | Ultravox config API retired. |
+| `/api/v1/ultravox-config/voices` | GET | No equivalent | Ultravox config API retired. |
+| `/api/v1/whatsapp/configs` | GET, POST | No equivalent | WhatsApp is not in the public OpenAPI. |
+| `/api/v1/whatsapp/configs/{id}` | GET, PATCH, DELETE | No equivalent | WhatsApp is not in the public OpenAPI. |
+| `/api/v1/whatsapp/configs/{id}/access-token` | GET | No equivalent | WhatsApp is not in the public OpenAPI. |
+| `/api/v1/workflows` | GET, POST | No equivalent | Milli voice workflows are not a Kupe public resource. Use a single agent + tools. |
+| `/api/v1/workflows/library` | GET | No equivalent | Milli voice workflows are not a Kupe public resource. Use a single agent + tools. |
+| `/api/v1/workflows/nodes/{workflow_node_id}` | DELETE | No equivalent | Milli voice workflows are not a Kupe public resource. Use a single agent + tools. |
+| `/api/v1/workflows/transitions/{workflow_transition_id}` | DELETE | No equivalent | Milli voice workflows are not a Kupe public resource. Use a single agent + tools. |
+| `/api/v1/workflows/{workflow_id}` | GET, PATCH, DELETE | No equivalent | Milli voice workflows are not a Kupe public resource. Use a single agent + tools. |
+| `/api/v1/workflows/{workflow_id}/clone` | POST | No equivalent | Milli voice workflows are not a Kupe public resource. Use a single agent + tools. |
+
+If you depended on any of these, rebuild the workflow with a Kupe agent, org tools, Hub, or a provider you own. Do not assume a hidden alias on `x.kupe.in`.
+

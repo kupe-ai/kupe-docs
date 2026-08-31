@@ -1,0 +1,33 @@
+---
+title: Catalog: knowledge
+description: Every mounted Milli path in this group (21 paths, 30 method+path pairs) and the Kupe replacement.
+---
+
+Knowledge bases and call databases. Narrative: [knowledge](/migrate/knowledge).
+
+**21 unique Milli paths** in this table (30 method+path pairs). Inventory is the live FastAPI app, not `api_specification.yaml`.
+
+| Milli | Methods | Kupe | Notes |
+| --- | --- | --- | --- |
+| `/api/v1/agent-files-mappings/agent/{agent_id}` | GET, DELETE | `config.knowledge_base_ids` on the agent | No mapping CRUD. |
+| `/api/v1/agent-files-mappings/agent/{agent_id}/file/{upload_file_id}` | GET, DELETE | `config.knowledge_base_ids` on the agent | No mapping CRUD. |
+| `/api/v1/agent-files-mappings/create` | POST | `config.knowledge_base_ids` on the agent | No mapping CRUD. |
+| `/api/v1/agent-files-mappings/file/{upload_file_id}` | GET, DELETE | `config.knowledge_base_ids` on the agent | No mapping CRUD. |
+| `/api/v1/agent-files-mappings/{mapping_id}` | GET, PUT, DELETE | `config.knowledge_base_ids` on the agent | No mapping CRUD. |
+| `/api/v1/call-data-population/export/{structure_id}` | GET | Automatic row on hangup + `GET /v1/databases/{id}/rows` / `export` | No process/progress jobs. |
+| `/api/v1/call-data-population/process/{structure_id}` | POST | Automatic row on hangup + `GET /v1/databases/{id}/rows` / `export` | No process/progress jobs. |
+| `/api/v1/call-data-population/progress/{job_id}` | GET | Automatic row on hangup + `GET /v1/databases/{id}/rows` / `export` | No process/progress jobs. |
+| `/api/v1/call-data-population/results/{structure_id}` | GET | Automatic row on hangup + `GET /v1/databases/{id}/rows` / `export` | No process/progress jobs. |
+| `/api/v1/call-structure/schema-chat` | WS | Call databases `/v1/.../databases` | No schema-chat WebSocket. |
+| `/api/v1/call-structure/structures` | GET | Call databases `/v1/.../databases` | No schema-chat WebSocket. |
+| `/api/v1/call-structure/structures/{structure_id}` | GET, PATCH, DELETE | Call databases `/v1/.../databases` | No schema-chat WebSocket. |
+| `/api/v1/files/browse` | GET | No equivalent | Super-admin / other-user files. |
+| `/api/v1/files/scrape-url` | POST | No scrape route | Upload a file into a knowledge base. |
+| `/api/v1/files/supported-formats` | GET | No equivalent | Upload and handle 4xx. |
+| `/api/v1/files/upload` | POST | Knowledge-base files under `/v1/orgs/{org_id}/projects/{project_id}/knowledge-bases/{kb_id}/files` |  |
+| `/api/v1/files/user/me` | GET | Knowledge-base files under `/v1/orgs/{org_id}/projects/{project_id}/knowledge-bases/{kb_id}/files` |  |
+| `/api/v1/files/user/{user_id}` | GET | No equivalent | Super-admin / other-user files. |
+| `/api/v1/files/{file_id}` | GET, PUT, DELETE | Knowledge-base files under `/v1/orgs/{org_id}/projects/{project_id}/knowledge-bases/{kb_id}/files` |  |
+| `/api/v1/search/hybrid` | POST | `POST .../knowledge-bases/{kb_id}/search` | Authenticated; Milli search was unauthenticated. |
+| `/api/v1/search/semantic` | POST | `POST .../knowledge-bases/{kb_id}/search` | Authenticated; Milli search was unauthenticated. |
+

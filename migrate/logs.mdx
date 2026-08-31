@@ -1,0 +1,31 @@
+---
+title: Logs, sessions, and live calls
+description: Milli call-analytics and live-calls become session list, transcript, recording, and analysis routes.
+---
+
+Milli listed calls via `/api/v1/call-analytics` (export included) and `/api/v1/live-calls` (including an SSE stream).
+
+Kupe has **sessions**. There is no separate “logs” product. See [Logs](/guides/logs).
+
+| Milli | Kupe |
+| --- | --- |
+| `GET /api/v1/call-analytics` | `GET /v1/orgs/{org_id}/sessions` |
+| `GET /api/v1/call-analytics/export` | Transcript + analysis per session; database [export](/guides/databases) for structured fields |
+| `POST .../admin/cleanup-recordings` | No public equivalent |
+| `GET /api/v1/live-calls` `/records` `/events` | Same session index; live vs completed is `status` / timestamps on `GET /v1/sessions/{session_id}` |
+| `GET /api/v1/live-calls/stream` | **No public SSE** |
+| `GET /api/v1/dashboard/{user_id}` | Hub home; no public dashboard JSON |
+| `GET /api/v1/campaigns/{id}/live-calls` | `GET /v1/batches/{batch_id}/events` + org sessions |
+
+Per-session reads:
+
+- `GET /v1/sessions/{session_id}`
+- `GET /v1/sessions/{session_id}/transcript`
+- `GET /v1/sessions/{session_id}/recording`
+- `GET /v1/sessions/{session_id}/analysis`
+- `POST /v1/sessions/{session_id}/end` (in-flight)
+- `GET /v1/orgs/{org_id}/recordings` + `GET /v1/recordings/{id}/playback-url`
+
+`direction` is `web` | `inbound` | `outbound`.
+
+Tool-call traces: `GET /v1/orgs/{org_id}/tool-call-events` and `GET /v1/orgs/{org_id}/agents/{agent_id}/tool-call-stats`.

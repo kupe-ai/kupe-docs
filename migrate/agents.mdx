@@ -1,0 +1,145 @@
+---
+title: Agents
+description: Nested Milli agent payloads become a flat Kupe AgentBody with config, versions, and archive instead of delete.
+---
+
+Milli agents were a bundle of tables: `agent` row plus model / TTS / STT / VAD patches. Kupe stores one agent document: `name`, `system_prompt`, `greeting`, catalog ids, and `config`.
+
+<Note>
+  Milli `DELETE /api/v1/agents/{agent_id}` hard-deleted. Kupe uses **`POST /v1/agents/{agent_id}/archive`**. There is no public hard-delete.
+</Note>
+
+## Create
+
+Milli `POST /api/v1/agents` required a nested object. `POST /api/v1/agents/simple` only needed `name` + `description` and filled platform defaults.
+
+Kupe has **one** create: `POST /v1/orgs/{org_id}/projects/{project_id}/agents`. `name` and `system_prompt` are required. There is no `description` field on `AgentBody` — put positioning in the [spoken prompt](/guides/prompting).
+
+<CodeGroup>
+
+```bash Milli
+curl -X POST https://api.kupe.in/api/v1/agents \
+  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent": {
+      "name": "Priya",
+      "description": "EMI collections",
+      "is_active": true,
+      "first_response_message": "Hi, this is Priya from the bank."
+    },
+    "agent_model_config": {
+      "model_name": "gpt-4.1-mini",
+      "temperature": 0.7,
+      "max_tokens": 150,
+      "system_prompt": "You collect overdue EMIs. Be warm and brief."
+    },
+    "tts_config": {
+      "tts_model_name": "tts-1",
+      "voice_name": "priya"
+    },
+    "transcriber_config": {
+      "transcriber_model_name": "faster_whisper",
+      "language": "en"
+    }
+  }'
+```
+
+```bash Kupe
+curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../agents \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Priya",
+    "system_prompt": "You collect overdue EMIs. Be warm and brief.",
+    "greeting": "Hi, this is Priya from the bank.",
+    "tts_voice_id": "priya",
+    "config": {
+      "timezone": "Asia/Kolkata",
+      "llm": { "temperature": 0.7 }
+    }
+  }'
+```
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+me = client.me()
+agent = client.agents.create(
+    org_id=me.org_id,
+    project_id=me.project_id,
+    name="Priya",
+    system_prompt="You collect overdue EMIs. Be warm and brief.",
+    greeting="Hi, this is Priya from the bank.",
+    tts_voice_id="priya",
+)
+```
+
+</CodeGroup>
+
+Response: Milli returned `{ agent, configurations, validation_status }`. Kupe returns a single `AgentOut` (`id` like `agt_...`, `config`, `version`, …).
+
+## Field map
+
+| Milli | Kupe |
+| --- | --- |
+| `agent.name` | `name` (real first name) |
+| `agent.description` | No field — fold into `system_prompt` |
+| `agent.first_response_message` / `welcome_message` | `greeting` |
+| `agent.is_active` | Deployment/campaign status, not a boolean on the agent. Archive to retire. |
+| `agent.recording_enabled` / `hipaa_compliance` | Session/recording policy in Hub; not the same flags on `AgentBody` |
+| `agent.apply_noise_reduction` | `config.audio` (noise / telephone filter knobs — see `AgentConfig` in the [API reference](/api-reference)) |
+| `agent.tts_filler_enabled` | `config.thinking_sounds` |
+| `agent_model_config.system_prompt` | **Top-level** `system_prompt` |
+| `agent_model_config.model_name` / `model_provider_id` | `llm_id` (catalog id from `GET /v1/providers`) |
+| `agent_model_config.temperature` / `max_tokens` | `config.llm` |
+| `tts_config.voice_name` | `tts_voice_id` **or** sanitized name on realtime (`priya`) |
+| `tts_config.tts_model_name` | `tts_id` |
+| `transcriber_config.*` | `stt_id` |
+| `PATCH .../vad-config` | `config.turn` / `config.session` (no dedicated VAD route) |
+| `agent_specific_config.timezone` | `config.timezone` |
+| `agent_specific_config.inbound_transfer_routes` | `config.call_transfer` |
+| `agent_specific_config.auto_terminate_call` | `config.auto_cut` |
+| `agent_specific_config.session_timeout` / `time_to_cut` / `message_of_cut` | `config.session` + `config.end_of_call_warning` |
+| `agent_specific_config.webhooks` | Org [tools](/guides/tools) + post-call analyses — not a blob on the agent |
+| `{{variable}}` in prompt | `config.variables` as `[{key, description, example}]` — see [Prompting](/guides/prompting) |
+| Agent file / RAG mapping | `config.knowledge_base_ids` |
+
+## List / get / patch
+
+| Milli | Kupe |
+| --- | --- |
+| `GET /api/v1/agents` | `GET /v1/orgs/{org_id}/projects/{project_id}/agents` (`limit`/`offset`, `{ items, total }`) |
+| `GET /api/v1/agents/{id}` | `GET /v1/agents/{agent_id}` |
+| `PUT /api/v1/agents/{id}` (full nested replace) | `PATCH /v1/agents/{agent_id}` (`AgentPatchBody`) |
+| `PATCH .../model-config` (and tts / transcriber / vad) | Same `PATCH` with `llm_id` / `stt_id` / `tts_id` / `config` |
+| `GET /api/v1/agents/stats` | No equivalent — list and count `items` |
+| `GET /api/v1/agents/library` | No equivalent |
+| `GET /api/v1/agents/by-domain` / `domain-available` / `share-info` | No equivalent (legacy share pages / custom agent domains) |
+| `POST .../clone` | No clone route — `GET` then `POST` create |
+
+Kupe adds **versions**: `POST /v1/agents/{agent_id}/commit`, `GET .../versions`, `POST .../revert/{version}`. Milli had no public version API.
+
+## Tools and post-call analysis
+
+Milli attached tools by type (`endpoint` | `mcp_server`) on the agent, and had a separate post-analysis rule catalog.
+
+| Milli | Kupe |
+| --- | --- |
+| `GET/POST/PATCH /api/v1/agents/{id}/tools` | Tools live on the **org**. `POST /v1/orgs/{org_id}/tools`, then `POST /v1/agents/{agent_id}/tools` |
+| `DELETE .../tools/{tool_id}` | `DELETE /v1/agents/{agent_id}/tools/{tool_id}` |
+| `/api/v1/post-analysis/rules` | `/v1/orgs/{org_id}/post-call-analyses` and `/v1/agents/{agent_id}/post-call-analyses` |
+| `POST .../search-tool` | Create a [knowledge base](/guides/databases), then set `config.knowledge_base_ids` |
+
+## Providers and voices
+
+| Milli | Kupe |
+| --- | --- |
+| `GET /api/v1/providers/all` + `/model` `/stt` `/tts` `/vad` | `GET /v1/providers` (STT / LLM / TTS catalogs, `defaults`. Brand names are Kupe-facing.) |
+| `GET /api/v1/tts-voices` | `GET /v1/voices` |
+| `POST /api/v1/tts-voices` | `POST /v1/voices/clone` (**JWT**, not API key) |
+| `GET .../sample` | `GET /v1/voices/{voice_id}/preview` |
+| — | `POST /v1/voices/{voice_id}/speak` (billed) |
+
+See [Voices](/guides/voices) and [Platform features](/guides/features).

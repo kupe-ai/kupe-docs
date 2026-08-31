@@ -1,0 +1,50 @@
+---
+title: Catalog: voice and PSTN
+description: Every mounted Milli path in this group (34 paths, 56 method+path pairs) and the Kupe replacement.
+---
+
+Milli `/api/call` webhooks and sockets, `create_call`, text/WhatsApp, Ultravox S2S. Narrative: [realtime](/migrate/realtime).
+
+**34 unique Milli paths** in this table (56 method+path pairs). Inventory is the live FastAPI app, not `api_specification.yaml`.
+
+<Note>
+  Milli `api_specification.yaml` also lists `GET /api/call/test`. That path is **not mounted** in `milli_ai_backend` and has no Kupe replacement.
+</Note>
+
+| Milli | Methods | Kupe | Notes |
+| --- | --- | --- | --- |
+| `/api/call` | GET | No HTML status page | Use `GET /health`. |
+| `/api/call/auth/token` | GET | `POST /v1/realtime/sessions` | Ephemeral session; then `wss://x.kupe.in/agents/v1/realtime`. |
+| `/api/call/conference/initiate` | POST | Agent `config.call_transfer` / internal conference XML | No public conference API. |
+| `/api/call/conference_twiml` | POST | Agent `config.call_transfer` / internal conference XML | No public conference API. |
+| `/api/call/create_call` | POST | One-contact `POST /v1/batches` + `contacts:bulk` + `start` | Or MCP `trigger_outbound_call`. No `workflow_id`. |
+| `/api/call/elison-incoming_call` | GET, POST | No equivalent | Elison is not a Kupe public product path. |
+| `/api/call/elison-media-stream/agents/{agent_id}` | WS | No equivalent | Elison is not a Kupe public product path. |
+| `/api/call/elison-media-stream/workflows/{workflow_id}` | WS | No equivalent | Elison is not a Kupe public product path. |
+| `/api/call/elison-outbound_call` | GET, POST | No equivalent | Elison is not a Kupe public product path. |
+| `/api/call/exotel-incoming_call` | GET, POST | Exotel inbound webhook (platform) | Not in public OpenAPI. BYOK Exotel accounts still work via telephony accounts. |
+| `/api/call/exotel-media-stream/agents/{agent_id}` | WS | `wss://x.kupe.in/agents/v1/media` (ticketed) | Not a DIY public URL. Workflow sockets: no equivalent. |
+| `/api/call/exotel-media-stream/workflows/{workflow_id}` | WS | `wss://x.kupe.in/agents/v1/media` (ticketed) | Not a DIY public URL. Workflow sockets: no equivalent. |
+| `/api/call/incoming_call` | GET, POST | Provider webhook (Twilio inbound) | Not a public app API. Managed numbers are wired for you. |
+| `/api/call/init-web-media-stream` | GET | `POST /v1/realtime/sessions` | No separate init URL. |
+| `/api/call/media-stream/agents/{agent_id}` | WS | `wss://x.kupe.in/agents/v1/media` (ticketed) | Not a DIY public URL. Workflow sockets: no equivalent. |
+| `/api/call/media-stream/workflows/{workflow_id}` | WS | `wss://x.kupe.in/agents/v1/media` (ticketed) | Not a DIY public URL. Workflow sockets: no equivalent. |
+| `/api/call/openai-incoming_call` | GET, POST | No equivalent | OpenAI S2S Twilio stream retired. Use Kupe realtime or telephony inbound. |
+| `/api/call/openai-twilio-media-stream` | WS | No equivalent | OpenAI S2S Twilio stream retired. Use Kupe realtime or telephony inbound. |
+| `/api/call/outgoing-batch-call` | GET, POST | Batch dialer webhooks | Kupe campaigns own this; not a client route. |
+| `/api/call/plivo-hangup` | GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS | `https://x.kupe.in/v1/telephony/plivo/inbound/status` | Not in public OpenAPI. |
+| `/api/call/plivo-incoming_call` | GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS | `https://x.kupe.in/v1/telephony/plivo/inbound` | Not in public OpenAPI. Re-point Plivo apps. |
+| `/api/call/plivo-media-stream/agents/{agent_id}` | WS | `wss://x.kupe.in/agents/v1/media` (ticketed) | Not a DIY public URL. Workflow sockets: no equivalent. |
+| `/api/call/plivo-media-stream/workflows/{workflow_id}` | WS | `wss://x.kupe.in/agents/v1/media` (ticketed) | Not a DIY public URL. Workflow sockets: no equivalent. |
+| `/api/call/plivo-outbound_call` | GET, POST | `/v1/telephony/plivo/connect/{attempt}` + `/status/{attempt}` | Issued per dial; not for clients. |
+| `/api/call/plivo_transfer_xml` | GET, POST | Agent `config.call_transfer` | No public TwiML route. |
+| `/api/call/stt-stream` | WS | Realtime WS | STT is inside Kupe realtime / telephony, not a raw STT socket. |
+| `/api/call/transfer_twiml` | POST | Agent `config.call_transfer` / internal conference XML | No public conference API. |
+| `/api/call/web-media-stream` | WS | `wss://x.kupe.in/agents/v1/realtime` | Web only; not telephony. |
+| `/api/text/stream_text_ws` | WS | No equivalent | WhatsApp webhooks and text builder sockets are not public on Kupe. |
+| `/api/text/stream_workflow_builder_ws` | WS | No equivalent | WhatsApp webhooks and text builder sockets are not public on Kupe. |
+| `/api/text/whatsapp/webhook` | GET, POST | No equivalent | WhatsApp webhooks and text builder sockets are not public on Kupe. |
+| `/api/text/whatsapp/webhook/verification-status` | GET | No equivalent | WhatsApp webhooks and text builder sockets are not public on Kupe. |
+| `/api/v1/s2s-model/u-incoming_call/{agent_id}` | GET, POST | No equivalent | Ultravox S2S inbound retired. |
+| `/health` | GET | `GET /health` and `GET /ready` on `https://x.kupe.in` | Keep for probes. |
+

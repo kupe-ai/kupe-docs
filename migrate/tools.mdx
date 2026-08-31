@@ -1,0 +1,84 @@
+---
+title: Tools, webhooks, and Composio
+description: Milli tool-endpoint-defs, MCP server defs, and agent webhooks become org tools plus attached agent tools.
+---
+
+Milli tools were **user-owned definitions** (`/tool-endpoint-defs`, `/tools-mcp-server-defs`) then mapped onto an agent. Agent **webhooks** were a second channel: outbound “start this call” and incoming “call ended”.
+
+Kupe tools are **org-owned**. Kinds: `custom_webhook`, `mcp`, `composio`. Attach with `POST /v1/agents/{agent_id}/tools`. See [Tools](/guides/tools).
+
+## HTTP and MCP tools
+
+| Milli | Kupe |
+| --- | --- |
+| `POST /api/v1/tool-endpoint-defs` | `POST /v1/orgs/{org_id}/tools` with `kind: custom_webhook`, `http_url`, `http_method`, JSON Schema `parameters` |
+| `GET/PUT/DELETE /tool-endpoint-defs/{tool_id}` | `GET/PATCH /v1/tools/{tool_id}`, `POST /v1/tools/{tool_id}/archive` |
+| `POST /tools-mcp-server-defs` | `kind: mcp` plus server URL / headers |
+| `POST .../fetch_mcp_tools` / `filter-tools` / `clone` | Configure the MCP tool, then attach. No clone helper. |
+| `POST /tool-endpoint-defs/global/setup` | No equivalent |
+| `DELETE .../user/all` | Archive tools one by one |
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+org_id = client.me().org_id
+tool = client.tools.create(
+    org_id,
+    name="lookup_loan",
+    description="Fetch EMI status by account id",
+    kind="custom_webhook",
+    http_url="https://example.com/emi",
+    http_method="POST",
+    parameters={"type": "object", "properties": {"account_id": {"type": "string"}}},
+    required=["account_id"],
+)
+client.agents.tools.attach("agt_...", tool_id=tool.id)
+```
+
+```bash cURL
+curl -X POST https://x.kupe.in/v1/orgs/org_.../tools \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"lookup_loan",
+    "description":"Fetch EMI status by account id",
+    "kind":"custom_webhook",
+    "http_url":"https://example.com/emi",
+    "http_method":"POST",
+    "parameters":{"type":"object","properties":{"account_id":{"type":"string"}}},
+    "required":["account_id"]
+  }'
+```
+
+</CodeGroup>
+
+## Agent start-call / hangup webhooks
+
+| Milli | Kupe |
+| --- | --- |
+| `PUT /api/v1/webhooks/agents/{agent_id}` | No per-agent webhook blob |
+| `POST .../outbound` (and legacy `.../incoming`) — CRM triggers a call | One-contact batch or MCP `trigger_outbound_call` |
+| `POST .../test-incoming` / `test-outgoing` | No equivalent |
+| Incoming “call ended” URL after analysis | Attach a post-call analysis + a webhook tool, or poll `GET /v1/sessions/{session_id}/analysis` |
+
+## Composio
+
+Milli used user-level connect URLs (`/api/v1/composio/connect`, `authorize-toolkit`, `wait-for-connection`, toolkit tool lists).
+
+Kupe is **org-scoped**:
+
+- `GET /v1/orgs/{org_id}/composio/toolkits`
+- `GET .../toolkits/{toolkit_slug}/tools`
+- `GET/POST /v1/orgs/{org_id}/composio/connections`
+- `POST /v1/composio/connections/{connection_id}/refresh`
+- `DELETE /v1/composio/connections/{connection_id}`
+- `GET /v1/orgs/{org_id}/composio/tools`
+
+Nango (`/api/v1/nango/*`) is **not** on the Kupe public API. Use Composio or a custom webhook.
+
+## MCP note
+
+Do not point Cursor at Milli. Use [Kupe MCP](/kupe-mcp): `http://mcp.kupe.in/mcp` with `Authorization: Bearer sk-kupe-...`. Tools such as `create_webhook_tool`, `create_mcp_tool`, and `list_org_tools` wrap these routes. Details: [Migrate MCP](/migrate/mcp).

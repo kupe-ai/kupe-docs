@@ -1,0 +1,34 @@
+---
+title: Billing and usage
+description: Milli wallets, Razorpay, and per-service usage collapse to wallet, invoices, cost-summary, and daily.
+---
+
+Milli billing was large: org/user wallets, grants, caps, Razorpay orders, subscriptions, forex, credit-request tickets, earnings, and per-service usage tables. Many of those routes were **dashboard / super-admin**.
+
+Kupe public billing is **wallet + invoices + two usage rollups**. Checkout is Hub-only. See [Billing](/guides/billing).
+
+## What maps
+
+| Milli | Kupe |
+| --- | --- |
+| `GET /api/v1/wallets/me` | `GET /v1/orgs/{org_id}/billing/wallet` |
+| `GET /api/v1/payments/invoices` + download | `GET /v1/orgs/{org_id}/billing/invoices` and `GET .../invoices/{invoice_id}/pdf` |
+| `GET /api/v1/billing/usage/summary` / `overview` | `GET /v1/orgs/{org_id}/usage/cost-summary` |
+| `GET /api/v1/billing/usage/records` / session usage | `GET /v1/orgs/{org_id}/usage/daily` only — **per-service and per-session metric lines are not public** |
+| `GET /api/v1/organizations/{org_id}/billing/summary` | Cost-summary + wallet |
+| `POST /api/v1/orgs/{org_id}/markup` etc. | Super-admin Milli — not public. `POST /v1/orgs/{org_id}/balance/adjust` exists on the public spec for privileged adjust (do not assume your key can call it). |
+
+`GET /billing/*` (no `/api/v1` prefix) is a Milli **alias** of `/api/v1/billing/*`. Ignore it when rewriting.
+
+## What does not map (use Hub)
+
+| Milli | Notes |
+| --- | --- |
+| `/api/v1/payments/*` (Razorpay config, create-order, verify, topup, subscription, webhook) | Dashboard checkout. Not in Kupe public OpenAPI. |
+| Wallet grants / cap / adjust / member wallets | Internal / admin |
+| `/api/v1/credit-requests/*` | No public ticket API |
+| `/api/v1/earnings/*` | No equivalent |
+| `/api/v1/billing/forex-*` / `platform-pricing` / `service-pricing` | Public pricing page / Hub calculator; Milli `GET /api/v1/public/pricing-calculator-options` is also gone as an API |
+| `/api/v1/public/forex-convert` | No equivalent |
+
+Top up and download invoices in [hub.kupe.in](https://hub.kupe.in).

@@ -109,6 +109,7 @@
               "guides/inbound",
               "guides/phones",
               "guides/kyc",
+              "guides/ucc",
               "guides/voices",
               "guides/tools",
               "guides/databases",
@@ -120,6 +121,57 @@
             "group": "MCP",
             "icon": "bot",
             "pages": ["kupe-mcp"]
+          }
+        ]
+      },
+      {
+        "tab": "Migrate",
+        "icon": "unplug",
+        "groups": [
+          {
+            "group": "Start here",
+            "icon": "compass",
+            "pages": [
+              "migrate/index",
+              "migrate/hosts-auth"
+            ]
+          },
+          {
+            "group": "How to rewrite calls",
+            "icon": "git-compare",
+            "pages": [
+              "migrate/agents",
+              "migrate/realtime",
+              "migrate/phones",
+              "migrate/inbound",
+              "migrate/campaigns",
+              "migrate/tools",
+              "migrate/knowledge",
+              "migrate/logs",
+              "migrate/billing",
+              "migrate/orgs"
+            ]
+          },
+          {
+            "group": "MCP",
+            "icon": "bot",
+            "pages": ["migrate/mcp"]
+          },
+          {
+            "group": "Complete Milli catalog",
+            "icon": "table",
+            "pages": [
+              "migrate/catalog-agents",
+              "migrate/catalog-voice",
+              "migrate/catalog-phones",
+              "migrate/catalog-campaigns",
+              "migrate/catalog-tools",
+              "migrate/catalog-knowledge",
+              "migrate/catalog-logs",
+              "migrate/catalog-billing",
+              "migrate/catalog-auth",
+              "migrate/catalog-no-equivalent"
+            ]
           }
         ]
       },

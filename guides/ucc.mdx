@@ -1,0 +1,134 @@
+---
+title: UCC complaints
+description: India Plivo UCC (Unsolicited Commercial Communication) — 5-day opt-in proof, then do not call the complainant again.
+---
+
+Plivo UCC is **India voice only** (landline + 160-series) and **account-level**. When someone files an Unsolicited Commercial Communication complaint, you have **5 business days** (Monday–Friday) to submit opt-in proof.
+
+Do **not** call the complainant again. Kupe suppresses that number on outbound.
+
+Requires `feature_phone_numbers` and at least one Plivo account (Kupe-managed or BYOK). Hidden for Twilio / Exotel-only orgs.
+
+## Callback URL
+
+Plivo has no API to set the callback URL. Paste this HTTPS URL into **Plivo Console → Phone Numbers → UCC**:
+
+```
+https://x.kupe.in/v1/plivo/webhooks/ucc
+```
+
+Kupe-managed: paste once on the Kupe Plivo account. BYOK: paste the same URL on **your** Plivo UCC dashboard. Periodic sync and `POST .../ucc/sync` keep the hub correct if the paste is late.
+
+Do this in the console: **Phone numbers → UCC**. Copy the callback URL from the card there.
+
+## Proof
+
+PDF / PNG / JPEG, **≤ 10 MB**. The file must show:
+
+| Required | Notes |
+| --- | --- |
+| Business logo | On the opt-in record |
+| Opt-in date | Within **6 months** of the complaint |
+| Complainant phone | Same number as `to_number` |
+
+After upload, status becomes `in_review`. On `rejected`, re-upload using `rejection_reason`.
+
+## Statuses
+
+| Status | Meaning | Hub popup |
+| --- | --- | --- |
+| `pending` | Proof due | Shown |
+| `in_review` | Proof submitted | Hidden for these rows |
+| `accepted` | Closed | Hidden |
+| `rejected` | Re-upload | Shown |
+
+The hub opens a popup on **any page** when the org has `pending` or `rejected` complaints. **See later** closes it for that session; a full refresh re-opens it if anything is still actionable. After you resubmit (`in_review`), the popup stays hidden for those rows.
+
+Red dots on **Phone numbers** and the inner **UCC** tab while `actionable_count > 0`.
+
+## Complaint object
+
+| Field | Notes |
+| --- | --- |
+| `id` | Kupe row id |
+| `org_id` | Org |
+| `reference_id` | Plivo id (`PUCC-YYYY-…`) |
+| `status` | `pending` \| `in_review` \| `accepted` \| `rejected` |
+| `from_number` | Your DID |
+| `to_number` | Complainant — never dial again |
+| `initiation_date` | Date of the call |
+| `complaint_category` | Plivo category |
+| `call_uuid` | Plivo call UUID |
+| `opt_in_proof_url` | After submit |
+| `rejection_reason` | On `rejected` |
+| `deadline_at` | Complaint date + 5 business days |
+| `telephony_account_id` | Linked number |
+| `last_callback_status` | Last Plivo callback |
+| `last_callback_at` | |
+| `created_at`, `updated_at` | |
+
+## API
+
+<CodeGroup>
+
+```python Python
+from kupe import Kupe
+
+client = Kupe()
+org_id = client.me().org_id
+
+summary = client.phones.ucc_summary(org_id)
+page = client.phones.ucc_list(org_id, status="pending")
+complaint = client.phones.ucc_retrieve(org_id, page.items[0].reference_id)
+client.phones.ucc_submit_proof(
+    org_id,
+    complaint.reference_id,
+    file=open("opt-in.pdf", "rb"),
+)
+client.phones.ucc_sync(org_id)
+```
+
+```typescript TypeScript
+import { Kupe } from "kupe-sdk";
+import { readFile } from "node:fs/promises";
+
+const kupe = new Kupe();
+const orgId = (await kupe.me()).org_id!;
+
+const summary = await kupe.phones.ucc.summary({ org_id: orgId });
+const page = await kupe.phones.ucc.list({ org_id: orgId, status: "pending" });
+const complaint = await kupe.phones.ucc.retrieve(page.items[0].reference_id, {
+  org_id: orgId,
+});
+const file = await readFile("opt-in.pdf");
+await kupe.phones.ucc.submitProof(complaint.reference_id, file, { org_id: orgId });
+await kupe.phones.ucc.sync({ org_id: orgId });
+```
+
+```bash cURL
+curl "https://x.kupe.in/v1/orgs/org_.../plivo/ucc?status=pending" \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl https://x.kupe.in/v1/orgs/org_.../plivo/ucc/summary \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl https://x.kupe.in/v1/orgs/org_.../plivo/ucc/PUCC-... \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+
+curl -X POST https://x.kupe.in/v1/orgs/org_.../plivo/ucc/PUCC-.../proof \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -F "file=@opt-in.pdf"
+
+curl -X POST https://x.kupe.in/v1/orgs/org_.../plivo/ucc/sync \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+```
+
+</CodeGroup>
+
+- `GET /v1/orgs/{org_id}/plivo/ucc` — list (`status`, `from_number`) → `{ items, total }`
+- `GET /v1/orgs/{org_id}/plivo/ucc/summary` → `{ actionable_count, pending, rejected, overdue, callback_url }`
+- `GET /v1/orgs/{org_id}/plivo/ucc/{reference_id}`
+- `POST /v1/orgs/{org_id}/plivo/ucc/{reference_id}/proof` — multipart `file`
+- `POST /v1/orgs/{org_id}/plivo/ucc/sync` — force pull from Plivo
+
+See [Phones](/guides/phones) for search, buy, and release. India numbers also need [KYC](/guides/kyc).

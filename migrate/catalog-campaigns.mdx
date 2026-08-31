@@ -1,0 +1,52 @@
+---
+title: Catalog: campaigns
+description: Every mounted Milli path in this group (40 paths, 52 method+path pairs) and the Kupe replacement.
+---
+
+Two Milli outbound APIs collapse to batches + recipient lists. Narrative: [campaigns](/migrate/campaigns).
+
+**40 unique Milli paths** in this table (52 method+path pairs). Inventory is the live FastAPI app, not `api_specification.yaml`.
+
+| Milli | Methods | Kupe | Notes |
+| --- | --- | --- | --- |
+| `/api/v1/batch-call/browse` | GET | No equivalent | Super-admin / other-user list. |
+| `/api/v1/batch-call/create` | POST | `POST /v1/batches` |  |
+| `/api/v1/batch-call/me` | GET | `GET /v1/orgs/{org_id}/projects/{project_id}/batches` |  |
+| `/api/v1/batch-call/start/{batch_id}` | POST | `POST /v1/batches/{batch_id}/start` |  |
+| `/api/v1/batch-call/status-callback` | POST | Provider webhook | Not a client route. |
+| `/api/v1/batch-call/upload-json/{batch_id}` | POST | `POST /v1/batches/{batch_id}/contacts:bulk` |  |
+| `/api/v1/batch-call/upload/{batch_id}` | POST | `POST /v1/batches/{batch_id}/contacts:bulk` |  |
+| `/api/v1/batch-call/user/{user_id}` | GET | No equivalent | Super-admin / other-user list. |
+| `/api/v1/batch-call/{batch_id}` | GET, DELETE | `GET /v1/batches/{batch_id}` | Delete/hide rules differ. |
+| `/api/v1/batch-call/{batch_id}/data` | GET | Contacts bulk / list / delete contact | `DELETE` Milli item → delete a contact on the batch if exposed; else replace via bulk. |
+| `/api/v1/batch-call/{batch_id}/data/upsert` | POST | Contacts bulk / list / delete contact | `DELETE` Milli item → delete a contact on the batch if exposed; else replace via bulk. |
+| `/api/v1/batch-call/{batch_id}/data/{item_id}` | DELETE | Contacts bulk / list / delete contact | `DELETE` Milli item → delete a contact on the batch if exposed; else replace via bulk. |
+| `/api/v1/batch-call/{batch_id}/status` | GET | `GET /v1/batches/{batch_id}/stats` |  |
+| `/api/v1/batch-call/{batch_id}/variables` | PATCH | Contact `variables` map + agent `config.variables` |  |
+| `/api/v1/campaigns` | GET, POST | `POST /v1/batches` · `GET /v1/orgs/{org_id}/projects/{project_id}/batches` |  |
+| `/api/v1/campaigns/dashboard-analytics` | GET | `GET /v1/orgs/{org_id}/projects/{project_id}/batches/analytics` |  |
+| `/api/v1/campaigns/status-callback` | GET, POST | Provider webhook | Not a client route. |
+| `/api/v1/campaigns/{campaign_id}` | GET, PATCH, DELETE | `GET/PATCH /v1/batches/{batch_id}` · hide instead of delete-after-run | `POST .../hide`. |
+| `/api/v1/campaigns/{campaign_id}/analytics` | GET | `GET /v1/batches/{batch_id}/stats` and `.../call-analytics` |  |
+| `/api/v1/campaigns/{campaign_id}/export` | GET | Batch events + session export / databases | No single campaign CSV twin. |
+| `/api/v1/campaigns/{campaign_id}/groups` | POST | `POST /v1/batches/{batch_id}/contacts:from-list` | People-groups → recipient lists. |
+| `/api/v1/campaigns/{campaign_id}/groups/multiple` | POST | `POST /v1/batches/{batch_id}/contacts:from-list` | People-groups → recipient lists. |
+| `/api/v1/campaigns/{campaign_id}/live-calls` | GET | Batch events + `GET /v1/orgs/{org_id}/sessions` | No SSE. |
+| `/api/v1/campaigns/{campaign_id}/live-calls/stream` | GET | Batch events + `GET /v1/orgs/{org_id}/sessions` | No SSE. |
+| `/api/v1/campaigns/{campaign_id}/logs` | GET | `GET /v1/batches/{batch_id}/events` + session transcript |  |
+| `/api/v1/campaigns/{campaign_id}/members` | GET, DELETE | `GET/POST /v1/batches/{batch_id}/contacts` |  |
+| `/api/v1/campaigns/{campaign_id}/pause` | POST | `POST /v1/batches/{batch_id}/pause` |  |
+| `/api/v1/campaigns/{campaign_id}/readiness` | GET | No equivalent | Start fails if the batch is incomplete. |
+| `/api/v1/campaigns/{campaign_id}/resume` | POST | `POST /v1/batches/{batch_id}/resume` |  |
+| `/api/v1/campaigns/{campaign_id}/start` | POST | `POST /v1/batches/{batch_id}/start` |  |
+| `/api/v1/campaigns/{campaign_id}/stop` | POST | `POST /v1/batches/{batch_id}/cancel` |  |
+| `/api/v1/people-groups` | GET, POST | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}` | PATCH, DELETE | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}/columns` | GET, POST | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}/columns/{column_id}` | PATCH, DELETE | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}/rows` | GET, POST | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}/rows/{row_id}` | PATCH, DELETE | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}/upload` | POST | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}/upload-csv` | POST | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+| `/api/v1/people-groups/{group_id}/upload/preview` | POST | `/v1/recipient-lists` (+ members, bulk) | No spreadsheet columns API; variables live on each member. |
+

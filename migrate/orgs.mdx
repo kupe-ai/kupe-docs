@@ -1,0 +1,47 @@
+---
+title: Orgs, members, and keys
+description: Milli user-scoped orgs and API keys become Hub orgs, projects, and sk-kupe- project keys.
+---
+
+Milli organizations were a control-plane around **users** (invites, org roles, branding, bulk feature flags, custom domains). API keys belonged to a **user**.
+
+Kupe API keys belong to a **project**. `GET /v1/me` is how a key learns `org_id` / `project_id`. JWT callers are a user (`org_id`/`project_id` null). See [Authentication](/auth).
+
+## Map
+
+| Milli | Kupe |
+| --- | --- |
+| `GET /api/v1/me` | `GET /v1/me` — different JSON (auth method + ids, not Milli profile/consent) |
+| `POST /api/v1/me/consent` | No equivalent |
+| `GET /api/v1/me/users` | `GET /v1/orgs/{org_id}/members` |
+| `GET/POST /api/v1/organizations` | `GET/POST /v1/orgs` |
+| `GET .../organizations/{org_id}/detail` | `GET /v1/orgs/{org_id}` |
+| `GET .../users` / `PATCH .../org-role` / `POST .../invites` | `GET/POST /v1/orgs/{org_id}/members`, `PATCH .../members/{user_id}`, `GET .../members/me` |
+| `GET/POST /api/v1/api-keys` | `POST/GET /v1/projects/{project_id}/api-keys` — value is `sk-kupe-...`, shown once |
+| `PATCH/DELETE /api/v1/api-keys/{key_id}` | `DELETE /v1/projects/{project_id}/api-keys/{key_id}` (no label patch in the public spec) |
+| `GET /api/v1/feature-flags/me` | `GET /v1/feature-flags` and `GET /v1/orgs/{org_id}/access` |
+| `PUT /api/v1/feature-flags/{user_id}` | `PUT /v1/orgs/{org_id}/members/{user_id}/access` (member flags, not a global user row) |
+| `GET /api/v1/onboarding/me` | Hub first-run; no public onboarding API |
+| `GET /api/v1/public/auth/*` (signup, verify, forgot, resend) | Hub / Supabase hosted auth — **not** the Kupe REST API |
+| `GET /api/v1/public/organizations/login-by-slug/{slug}` / `tenant-by-host` | Custom-domain tenant login — **no public equivalent** |
+| `/api/v1/organizations/{org_id}/custom-domains/*` and `/admin/custom-domains/*` | No public custom-domain API |
+| Branding logo / patch | No public branding API |
+| `GET /api/v1/me/org-context` | `GET /v1/me` + `GET /v1/orgs/{org_id}` |
+
+<CodeGroup>
+
+```bash Milli
+curl https://api.kupe.in/api/v1/api-keys/fetch \
+  -H "x-api-key: YOUR_MILLI_KEY"
+```
+
+```bash Kupe
+curl -X POST https://x.kupe.in/v1/projects/prj_.../api-keys \
+  -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"ci"}'
+```
+
+</CodeGroup>
+
+Store the new secret as `KUPE_API_KEY`. Never send Milli `x-api-key` to `x.kupe.in`.
