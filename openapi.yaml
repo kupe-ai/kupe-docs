@@ -5215,6 +5215,306 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /v1/orgs/{org_id}/plivo/ucc/summary:
+    get:
+      tags:
+      - Phones
+      summary: UCC Summary
+      description: Actionable counts for the hub popup and red dots, plus the UCC callback URL to paste in Plivo Console.
+      operationId: ucc_summary_v1_orgs__org_id__plivo_ucc_summary_get
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Org Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlivoUccSummaryOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-codeSamples:
+      - lang: python
+        label: Python
+        source: |-
+          from kupe import Kupe
+
+          client = Kupe()
+          org_id = client.me().org_id
+          summary = client.phones.ucc_summary(org_id)
+          print(summary.actionable_count, summary.callback_url)
+      - lang: typescript
+        label: TypeScript
+        source: |-
+          import { Kupe } from "kupe-sdk";
+
+          const kupe = new Kupe();
+          const orgId = (await kupe.me()).org_id!;
+          const summary = await kupe.phones.ucc.summary({ org_id: orgId });
+          console.log(summary.actionable_count, summary.callback_url);
+      - lang: bash
+        label: cURL
+        source: |-
+          curl https://x.kupe.in/v1/orgs/org_.../plivo/ucc/summary \
+            -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+  /v1/orgs/{org_id}/plivo/ucc/sync:
+    post:
+      tags:
+      - Phones
+      summary: Sync UCC
+      description: Force-pull UCC complaints from Plivo into Kupe (backup if the callback URL was never registered).
+      operationId: sync_ucc_v1_orgs__org_id__plivo_ucc_sync_post
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Org Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlivoUccListOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-codeSamples:
+      - lang: python
+        label: Python
+        source: |-
+          from kupe import Kupe
+
+          client = Kupe()
+          org_id = client.me().org_id
+          page = client.phones.ucc_sync(org_id)
+          print(page.total)
+      - lang: typescript
+        label: TypeScript
+        source: |-
+          import { Kupe } from "kupe-sdk";
+
+          const kupe = new Kupe();
+          const orgId = (await kupe.me()).org_id!;
+          const page = await kupe.phones.ucc.sync({ org_id: orgId });
+          console.log(page.total);
+      - lang: bash
+        label: cURL
+        source: |-
+          curl -X POST https://x.kupe.in/v1/orgs/org_.../plivo/ucc/sync \
+            -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+  /v1/orgs/{org_id}/plivo/ucc:
+    get:
+      tags:
+      - Phones
+      summary: List UCC
+      description: List UCC complaints. Optional filters `status` (`pending` | `in_review` | `accepted` | `rejected`) and `from_number`.
+      operationId: list_ucc_v1_orgs__org_id__plivo_ucc_get
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Org Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: pending | in_review | accepted | rejected
+          title: Status
+        description: pending | in_review | accepted | rejected
+      - name: from_number
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Number
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlivoUccListOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-codeSamples:
+      - lang: python
+        label: Python
+        source: |-
+          from kupe import Kupe
+
+          client = Kupe()
+          org_id = client.me().org_id
+          page = client.phones.ucc_list(org_id, status="pending")
+          print(page.items, page.total)
+      - lang: typescript
+        label: TypeScript
+        source: |-
+          import { Kupe } from "kupe-sdk";
+
+          const kupe = new Kupe();
+          const orgId = (await kupe.me()).org_id!;
+          const page = await kupe.phones.ucc.list({ org_id: orgId, status: "pending" });
+          console.log(page.items, page.total);
+      - lang: bash
+        label: cURL
+        source: |-
+          curl "https://x.kupe.in/v1/orgs/org_.../plivo/ucc?status=pending" \
+            -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+  /v1/orgs/{org_id}/plivo/ucc/{reference_id}:
+    get:
+      tags:
+      - Phones
+      summary: Get UCC
+      description: Retrieve one UCC complaint by Plivo `reference_id` (`PUCC-YYYY-…`).
+      operationId: get_ucc_v1_orgs__org_id__plivo_ucc__reference_id__get
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Org Id
+      - name: reference_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Reference Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlivoUccComplaintOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-codeSamples:
+      - lang: python
+        label: Python
+        source: |-
+          from kupe import Kupe
+
+          client = Kupe()
+          org_id = client.me().org_id
+          complaint = client.phones.ucc_retrieve(org_id, "PUCC-...")
+          print(complaint.status, complaint.deadline_at)
+      - lang: typescript
+        label: TypeScript
+        source: |-
+          import { Kupe } from "kupe-sdk";
+
+          const kupe = new Kupe();
+          const orgId = (await kupe.me()).org_id!;
+          const complaint = await kupe.phones.ucc.retrieve("PUCC-...", { org_id: orgId });
+          console.log(complaint.status, complaint.deadline_at);
+      - lang: bash
+        label: cURL
+        source: |-
+          curl https://x.kupe.in/v1/orgs/org_.../plivo/ucc/PUCC-... \
+            -H "Authorization: Bearer sk-kupe-YOUR_KEY"
+  /v1/orgs/{org_id}/plivo/ucc/{reference_id}/proof:
+    post:
+      tags:
+      - Phones
+      summary: Submit UCC Proof
+      description: Upload opt-in proof (PDF / PNG / JPEG, ≤ 10 MB) as multipart `file`. Sets local status to `in_review`.
+      operationId: submit_ucc_proof_v1_orgs__org_id__plivo_ucc__reference_id__proof_post
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Org Id
+      - name: reference_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Reference Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_submit_ucc_proof_v1_orgs__org_id__plivo_ucc__reference_id__proof_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlivoUccComplaintOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-codeSamples:
+      - lang: python
+        label: Python
+        source: |-
+          from kupe import Kupe
+
+          client = Kupe()
+          org_id = client.me().org_id
+          complaint = client.phones.ucc_submit_proof(
+              org_id,
+              "PUCC-...",
+              file=open("opt-in.pdf", "rb"),
+          )
+          print(complaint.status)
+      - lang: typescript
+        label: TypeScript
+        source: |-
+          import { Kupe } from "kupe-sdk";
+          import { readFile } from "node:fs/promises";
+
+          const kupe = new Kupe();
+          const orgId = (await kupe.me()).org_id!;
+          const file = await readFile("opt-in.pdf");
+          const complaint = await kupe.phones.ucc.submitProof("PUCC-...", file, {
+            org_id: orgId,
+          });
+          console.log(complaint.status);
+      - lang: bash
+        label: cURL
+        source: |-
+          curl -X POST https://x.kupe.in/v1/orgs/org_.../plivo/ucc/PUCC-.../proof \
+            -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
+            -F "file=@opt-in.pdf"
   /v1/orgs/{org_id}/composio/toolkits:
     get:
       tags:
@@ -6935,6 +7235,16 @@ components:
       - name
       - sample
       title: Body_clone_voice_v1_voices_clone_post
+    Body_submit_ucc_proof_v1_orgs__org_id__plivo_ucc__reference_id__proof_post:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_submit_ucc_proof_v1_orgs__org_id__plivo_ucc__reference_id__proof_post
     Body_update_voice_v1_voices__voice_id__patch:
       properties:
         name:
@@ -9812,6 +10122,138 @@ components:
       - number
       - country_iso
       title: PlivoPurchaseBody
+    PlivoUccComplaintOut:
+      properties:
+        id:
+          type: string
+          title: Id
+        org_id:
+          type: string
+          title: Org Id
+        reference_id:
+          type: string
+          title: Reference Id
+        status:
+          type: string
+          enum:
+          - pending
+          - in_review
+          - accepted
+          - rejected
+          title: Status
+        from_number:
+          type: string
+          title: From Number
+        to_number:
+          type: string
+          title: To Number
+        initiation_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Initiation Date
+        complaint_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Complaint Category
+        call_uuid:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Call Uuid
+        opt_in_proof_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Opt In Proof Url
+        rejection_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rejection Reason
+        deadline_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Deadline At
+        telephony_account_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Telephony Account Id
+        last_callback_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Callback Status
+        last_callback_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Callback At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - org_id
+      - reference_id
+      - status
+      - from_number
+      - to_number
+      - created_at
+      - updated_at
+      title: PlivoUccComplaintOut
+    PlivoUccListOut:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/PlivoUccComplaintOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+      type: object
+      required:
+      - items
+      - total
+      title: PlivoUccListOut
+    PlivoUccSummaryOut:
+      properties:
+        actionable_count:
+          type: integer
+          title: Actionable Count
+        pending:
+          type: integer
+          title: Pending
+        rejected:
+          type: integer
+          title: Rejected
+        overdue:
+          type: integer
+          title: Overdue
+        callback_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Callback Url
+      type: object
+      required:
+      - actionable_count
+      - pending
+      - rejected
+      - overdue
+      title: PlivoUccSummaryOut
     PostCallAnalysisBody:
       properties:
         name:
@@ -11629,7 +12071,7 @@ tags:
 - name: Audio assets
   description: Ambient audio presets and project uploads.
 - name: Phones
-  description: Search, buy, and manage telephony numbers.
+  description: Search, buy, and manage telephony numbers. India KYC and Plivo UCC complaints.
 - name: Voices
   description: Catalog voices, clones, preview, and speak.
 - name: Providers
