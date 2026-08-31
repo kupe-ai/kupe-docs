@@ -1,99 +1,86 @@
 ---
-title: Migrate from Milli
-description: Move integrations from api.kupe.in (Milli) to the Kupe platform at x.kupe.in. Hub is the console, not the REST host.
+title: Kupe App → Kupe Hub
+description: Move from api.kupe.in / app.kupe.in to x.kupe.in and hub.kupe.in. Same company, new platform.
 ---
-
-Milli (`milli_ai_backend`) was the previous public API, hosted at **`https://api.kupe.in`**. The Kupe platform (`kupe-backend`) is a new product: new auth, new resource model, new paths. There is no drop-in URL rewrite.
 
 <div class="kupe-hero kupe-hero-compact">
   <div class="kupe-matrix" aria-hidden="true"></div>
   <div class="kupe-hero-copy">
     <div class="kupe-kicker">Migration</div>
-    <h1>Milli APIs → Kupe APIs</h1>
+    <h1>Kupe App is now Kupe Hub</h1>
     <p>
-      Same company, new platform. Point HTTP at <code>https://x.kupe.in</code>,
-      sign in at <code>https://hub.kupe.in</code>, and replace <code>x-api-key</code>
-      with Bearer <code>sk-kupe-...</code>.
+      REST moves to <code>https://x.kupe.in</code>. Console moves to
+      <code>https://hub.kupe.in</code>. Auth is Bearer <code>sk-kupe-...</code>.
     </p>
   </div>
 </div>
 
 <Warning>
-  **`hub.kupe.in` is the product UI**, not the REST base. Calling Hub as if it were the API will not work. REST and WebSocket live on **`x.kupe.in`**.
+  **From 15 September 2026**, `app.kupe.in` becomes part of **Kupe Hub** at [`hub.kupe.in`](https://hub.kupe.in). Finish rewriting clients before then — App keys and UUIDs do not work on Hub.
 </Warning>
 
-## Why migrate
+<Note>
+  **`hub.kupe.in` is the console**, not the REST host. APIs and WebSockets live on **`x.kupe.in`**.
+</Note>
 
-| | Milli | Kupe |
+## At a glance
+
+| | Kupe App | Kupe Hub |
 | --- | --- | --- |
-| Host | `https://api.kupe.in` | `https://x.kupe.in` |
-| Console | `https://app.kupe.in` (legacy) | [`https://hub.kupe.in`](https://hub.kupe.in) |
-| Auth | `x-api-key` (opaque `token_urlsafe` string) or a Supabase user JWT | `Authorization: Bearer sk-kupe-...` (project key) or a Hub JWT |
-| Agent shape | Nested `agent` + `agent_model_config` + `tts_config` + `transcriber_config` | Flat `name`, `system_prompt`, `greeting`, `config.*` |
-| IDs | UUIDs | Prefixed (`agt_`, `org_`, `prj_`, `tel_`, `bat_`, `sess_`) |
-| Outbound | `POST /api/call/create_call` (query params) | One-contact **batch**, or a campaign |
-| Inbound | `POST /api/v1/phone/mapping` | **Inbound deployment** |
-| SDK | None first-party | [`kupe`](/sdk/python) / [`kupe-sdk`](/sdk/typescript) |
-| Agents in the IDE | Call Milli yourself | [Kupe MCP](/kupe-mcp) at `http://mcp.kupe.in/mcp` |
+| REST | `https://api.kupe.in` | `https://x.kupe.in` |
+| Console | `https://app.kupe.in` | [`https://hub.kupe.in`](https://hub.kupe.in) |
+| Auth | `x-api-key: …` | `Authorization: Bearer sk-kupe-…` |
+| Agent body | Nested `agent` + configs | Flat `name`, `system_prompt`, `greeting`, `config.*` |
+| IDs | UUIDs | Prefixed (`agt_`, `org_`, `prj_`, `tel_`, …) |
+| Outbound | `POST /api/call/create_call` | One-contact [batch](/guides/campaigns) |
+| Inbound | `POST /api/v1/phone/mapping` | [Inbound deployment](/guides/inbound) |
+| SDK / MCP | None first-party | [`kupe`](/sdk/python) · [`kupe-sdk`](/sdk/typescript) · [MCP](/kupe-mcp) |
 
-Milli keys, agent UUIDs, phone rows, and campaign IDs **do not work** on `x.kupe.in`. Recreate keys in Hub, then recreate (or re-link) agents, numbers, and campaigns.
+## Headers (diff)
 
-## Verified hosts
+```diff
+- GET https://api.kupe.in/api/v1/agents
+- x-api-key: YOUR_APP_KEY
++ GET https://x.kupe.in/v1/me
++ Authorization: Bearer sk-kupe-YOUR_KEY
+```
 
-These values are from live config, not marketing copy.
+## Auth response (diff)
 
-| Role | Milli | Kupe |
-| --- | --- | --- |
-| Public REST | `https://api.kupe.in` (`config.json` → `server.base_url`) | `https://x.kupe.in` (`public_api_url` / docs OpenAPI `servers`) |
-| Product UI | Legacy app host | `https://hub.kupe.in` (`frontend_origin`) |
-| Web realtime WS | `wss://api.kupe.in/api/call/web-media-stream` | `wss://x.kupe.in/agents/v1/realtime` |
-| Telephony media WS | `wss://api.kupe.in/api/call/{provider}-media-stream/...` | `wss://x.kupe.in/agents/v1/media` (ticketed; not a public DIY URL) |
-| MCP | — | `http://mcp.kupe.in/mcp` |
-| Docs | — | `https://docs.kupe.in` |
-
-Milli `api_specification.yaml` lists `https://api.inavlabs.com` as a server. Production traffic used **`api.kupe.in`** (`config.json`, CORS allow-list, Plivo answer URLs).
-
-## What this tab covers
-
-Every **mounted** Milli HTTP/WebSocket path from `milli_ai_backend` (380 unique paths, 484 method+path pairs, including provider webhooks). The checked-in Milli OpenAPI file (`api_specification.yaml`) only documents **18 paths** and is stale (`GET /api/call/test` is in that YAML and **is not mounted**).
-
-<CardGroup cols={2}>
-  <Card title="Hosts and auth" icon="key" href="/migrate/hosts-auth">
-    Header change, `GET /v1/me`, org and project IDs.
-  </Card>
-  <Card title="Agents" icon="bot" href="/migrate/agents">
-    Nested Milli create body → Kupe `AgentBody`.
-  </Card>
-  <Card title="Realtime and PSTN" icon="audio-lines" href="/migrate/realtime">
-    `create_call` and media sockets → sessions and batches.
-  </Card>
-  <Card title="Phones and KYC" icon="smartphone" href="/migrate/phones">
-    Telephony accounts, search/buy, India KYC, UCC.
-  </Card>
-  <Card title="Inbound" icon="phone-incoming" href="/migrate/inbound">
-    Phone mappings → inbound deployments.
-  </Card>
-  <Card title="Campaigns" icon="megaphone" href="/migrate/campaigns">
-    Campaigns, batch-call, people groups → batches and recipient lists.
-  </Card>
-  <Card title="Complete catalog" icon="table" href="/migrate/catalog-agents">
-    One table per Milli surface, every path listed.
-  </Card>
-  <Card title="No 1:1" icon="circle-off" href="/migrate/catalog-no-equivalent">
-    Workflows, WhatsApp, n8n, Ultravox, admin, and other retirements.
-  </Card>
-</CardGroup>
+```diff
+- // App: profile / consent blob
+- { "id": "<uuid>", "email": "...", ... }
++ // Hub: scope for every later call
++ { "auth": "api_key", "org_id": "org_...", "project_id": "prj_...", "user_id": null }
+```
 
 ## Rewrite order
 
-1. Create a Hub account and a **project API key** (`sk-kupe-...`). See [Authentication](/auth).
-2. Change the base URL to `https://x.kupe.in`. SDKs join `/v1` for you.
-3. Recreate the agent (`POST /v1/orgs/{org_id}/projects/{project_id}/agents`). Map prompt → `system_prompt`, welcome message → `greeting`, voice → `tts_voice_id` or catalog name. See [Prompting](/guides/prompting).
-4. Attach numbers as **telephony accounts**. India numbers still need [KYC](/guides/kyc). Bind inbound with a [deployment](/guides/inbound).
-5. Replace `POST /api/call/create_call` with a one-contact [campaign](/guides/campaigns) (or MCP `trigger_outbound_call`).
-6. Move tools to **org tools** (webhook / MCP / Composio), then attach them to the agent. See [Tools](/guides/tools).
-7. Point web testers at [Realtime](/realtime), not Milli media sockets.
+1. Create a Hub account + project API key — [Authentication](/auth).
+2. Point the base URL at `https://x.kupe.in` (SDKs join `/v1`).
+3. Recreate the agent — [Agents](/migrate/agents), [Prompting](/guides/prompting).
+4. Attach numbers + KYC / inbound — [Phones](/migrate/phones), [Inbound](/migrate/inbound).
+5. Replace `create_call` with a campaign / batch — [Campaigns](/migrate/campaigns).
+6. Move tools to org tools — [Tools](/migrate/tools).
+7. Point browsers at [Realtime](/realtime), not App media sockets.
 
-<Note>
-  Provider answer/hangup URLs are **not** in the public OpenAPI. Kupe-managed Plivo numbers are wired to `https://x.kupe.in/v1/telephony/plivo/inbound` on purchase. Do not keep Plivo applications aimed at `https://api.kupe.in/api/call/plivo-incoming_call`.
-</Note>
+<CardGroup cols={2}>
+  <Card title="Hosts and auth" icon="key" href="/migrate/hosts-auth">
+    Hosts, headers, `GET /v1/me`.
+  </Card>
+  <Card title="Agents" icon="bot" href="/migrate/agents">
+    Nested App body → flat Hub `AgentBody`.
+  </Card>
+  <Card title="Realtime and PSTN" icon="audio-lines" href="/migrate/realtime">
+    `create_call` → sessions and batches.
+  </Card>
+  <Card title="Phones, KYC, UCC" icon="smartphone" href="/migrate/phones">
+    Telephony accounts, India KYC, UCC.
+  </Card>
+  <Card title="Full path catalog" icon="table" href="/migrate/paths-agents">
+    Every App path → Hub replacement.
+  </Card>
+  <Card title="No 1:1" icon="circle-off" href="/migrate/paths-no-equivalent">
+    Workflows, WhatsApp, n8n, admin retirements.
+  </Card>
+</CardGroup>

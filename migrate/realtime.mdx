@@ -1,13 +1,13 @@
 ---
 title: Realtime and PSTN calls
-description: Milli media sockets and POST /api/call/create_call become Kupe realtime sessions and one-contact batches.
+description: Kupe App media sockets and POST /api/call/create_call become Kupe Hub realtime sessions and one-contact batches.
 ---
 
-Milli mixed three things on `/api/call`: provider **webhooks** (TwiML/XML), **WebSockets** for media, and **`POST /create_call`** for a single outbound PSTN dial. Kupe splits those.
+Kupe App mixed three things on `/api/call`: provider **webhooks** (TwiML/XML), **WebSockets** for media, and **`POST /create_call`** for a single outbound PSTN dial. Kupe splits those.
 
 ## Web / SDK realtime (not telephony)
 
-Milli web testers:
+Kupe App web testers:
 
 1. `GET /api/call/init-web-media-stream`
 2. `GET /api/call/auth/token` (RSA JWT, 1 hour, issuer `inavlabs_voice_platform`)
@@ -22,13 +22,13 @@ This path is **web-only** — it does not write telephony minutes. Event names a
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 # token was a platform RSA JWT, not your API key
 curl https://api.kupe.in/api/call/auth/token
 # then WebSocket wss://api.kupe.in/api/call/web-media-stream
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl -X POST https://x.kupe.in/v1/realtime/sessions \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
@@ -65,34 +65,34 @@ Pass `agent_id` on session create to reuse a Hub agent instead of inline `name` 
 
 ## One outbound phone call
 
-Milli `POST /api/call/create_call`:
+Kupe App `POST /api/call/create_call`:
 
-| | Milli |
+| | Kupe App |
 | --- | --- |
 | Query | `phoneNumber` (required), `agent_id` **or** `workflow_id`, optional `phone_number_id` |
 | Body | optional `{ "variable_values": { "name": "Alex" } }` |
 | Auth | Identity from `x-api-key` or Bearer (middleware skips this path); `Origin` must pass CORS |
 | Workflows | Supported via `workflow_id` |
 
-Kupe has **no** `create_call`. A single dial is a **one-contact campaign**:
+Kupe Hub has **no** `create_call`. A single dial is a **one-contact campaign**:
 
 1. `POST /v1/batches` with `agent_id` + `telephony_account_id`
 2. `POST /v1/batches/{batch_id}/contacts:bulk` with `phone_number` and `variables`
 3. `POST /v1/batches/{batch_id}/start`
 
-MCP wraps that as `trigger_outbound_call`. There is **no** `workflow_id` — Kupe does not run Milli workflows. See [Campaigns](/guides/campaigns).
+MCP wraps that as `trigger_outbound_call`. There is **no** `workflow_id` — Kupe does not run Kupe App workflows. See [Campaigns](/guides/campaigns).
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 curl -X POST "https://api.kupe.in/api/call/create_call?phoneNumber=%2B9198XXXXXXXX&agent_id=UUID" \
-  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "x-api-key: YOUR_APP_KEY" \
   -H "Content-Type: application/json" \
   -H "Origin: https://app.kupe.in" \
   -d '{"variable_values":{"name":"Alex"}}'
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl -X POST https://x.kupe.in/v1/batches \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
@@ -115,7 +115,7 @@ curl -X POST https://x.kupe.in/v1/batches/bat_.../start \
 
 ## Provider media sockets (do not reimplement)
 
-Milli exposed raw provider WebSockets:
+Kupe App exposed raw provider WebSockets:
 
 - `WS /api/call/media-stream/agents/{agent_id}` (Twilio)
 - `WS /api/call/plivo-media-stream/agents/{agent_id}`
@@ -125,18 +125,18 @@ Milli exposed raw provider WebSockets:
 - `WS /api/call/openai-twilio-media-stream`
 - `WS /api/call/stt-stream`
 
-Kupe telephony media is `wss://x.kupe.in/agents/v1/media?ticket=...&provider=...`. Tickets are issued by **inbound/outbound webhooks**, not by your client. They are not in the public OpenAPI. Point Plivo/Twilio/Exotel applications at Kupe’s webhook URLs (set on [purchase](/guides/phones) for managed numbers), not at Milli sockets.
+Kupe telephony media is `wss://x.kupe.in/agents/v1/media?ticket=...&provider=...`. Tickets are issued by **inbound/outbound webhooks**, not by your client. They are not in the public OpenAPI. Point Plivo/Twilio/Exotel applications at Kupe’s webhook URLs (set on [purchase](/guides/phones) for managed numbers), not at Kupe App sockets.
 
 ## Provider HTTP webhooks
 
-| Milli | Kupe (platform-owned; not public API) |
+| Kupe App | Kupe (platform-owned; not public API) |
 | --- | --- |
 | `GET/POST /api/call/incoming_call` | Twilio (and Plivo mis-aimed at the Twilio path) |
 | `.../plivo-incoming_call` | `https://x.kupe.in/v1/telephony/plivo/inbound` |
 | `.../plivo-hangup` | `https://x.kupe.in/v1/telephony/plivo/inbound/status` |
 | `.../plivo-outbound_call` | `/v1/telephony/plivo/connect/{attempt}` + `/status/{attempt}` |
 | `.../exotel-incoming_call` | Kupe Exotel inbound webhook (not public spec) |
-| `.../elison-incoming_call` / `elison-outbound_call` | No Elison product path on Kupe public API |
+| `.../elison-incoming_call` / `elison-outbound_call` | No Elison product path on Kupe Hub public API |
 | `.../openai-incoming_call` | Retired S2S Twilio stream |
 | `GET/POST /api/v1/s2s-model/u-incoming_call/{agent_id}` | Ultravox S2S — **no equivalent** |
 | Conference / `transfer_twiml` / `plivo_transfer_xml` | Warm transfer via `config.call_transfer` on the agent; XML is internal |
@@ -145,4 +145,4 @@ Kupe telephony media is `wss://x.kupe.in/agents/v1/media?ticket=...&provider=...
 
 ## Text / WhatsApp sockets
 
-`WS /api/text/stream_text_ws`, workflow-builder WS, and `/api/text/whatsapp/webhook` have **no Kupe public equivalent**. WhatsApp is not in the public OpenAPI.
+`WS /api/text/stream_text_ws`, workflow-builder WS, and `/api/text/whatsapp/webhook` have **no Kupe Hub public equivalent**. WhatsApp is not in the public OpenAPI.

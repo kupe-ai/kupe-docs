@@ -1,17 +1,17 @@
 ---
 title: Orgs, members, and keys
-description: Milli user-scoped orgs and API keys become Hub orgs, projects, and sk-kupe- project keys.
+description: Kupe App user-scoped orgs and API keys become Hub orgs, projects, and sk-kupe- project keys.
 ---
 
-Milli organizations were a control-plane around **users** (invites, org roles, branding, bulk feature flags, custom domains). API keys belonged to a **user**.
+Kupe App organizations were a control-plane around **users** (invites, org roles, branding, bulk feature flags, custom domains). API keys belonged to a **user**.
 
 Kupe API keys belong to a **project**. `GET /v1/me` is how a key learns `org_id` / `project_id`. JWT callers are a user (`org_id`/`project_id` null). See [Authentication](/auth).
 
 ## Map
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
-| `GET /api/v1/me` | `GET /v1/me` — different JSON (auth method + ids, not Milli profile/consent) |
+| `GET /api/v1/me` | `GET /v1/me` — different JSON (auth method + ids, not Kupe App profile/consent) |
 | `POST /api/v1/me/consent` | No equivalent |
 | `GET /api/v1/me/users` | `GET /v1/orgs/{org_id}/members` |
 | `GET/POST /api/v1/organizations` | `GET/POST /v1/orgs` |
@@ -30,12 +30,12 @@ Kupe API keys belong to a **project**. `GET /v1/me` is how a key learns `org_id`
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 curl https://api.kupe.in/api/v1/api-keys/fetch \
-  -H "x-api-key: YOUR_MILLI_KEY"
+  -H "x-api-key: YOUR_APP_KEY"
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl -X POST https://x.kupe.in/v1/projects/prj_.../api-keys \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
@@ -44,4 +44,4 @@ curl -X POST https://x.kupe.in/v1/projects/prj_.../api-keys \
 
 </CodeGroup>
 
-Store the new secret as `KUPE_API_KEY`. Never send Milli `x-api-key` to `x.kupe.in`.
+Store the new secret as `KUPE_API_KEY`. Never send Kupe App `x-api-key` to `x.kupe.in`.

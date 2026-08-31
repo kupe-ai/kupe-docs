@@ -5,24 +5,28 @@ description: api.kupe.in vs x.kupe.in, x-api-key vs Bearer sk-kupe-, and GET /v1
 
 ## Hosts
 
-| | Milli | Kupe |
+| | Kupe App | Kupe Hub |
 | --- | --- | --- |
 | REST | `https://api.kupe.in` | `https://x.kupe.in` |
-| Console | Legacy app | `https://hub.kupe.in` |
-| Docs playground | — | Sends Try it to `https://x.kupe.in` |
+| Console | `https://app.kupe.in` | `https://hub.kupe.in` |
+| Docs playground | — | Try it → `https://x.kupe.in` |
 
-Milli local default was `http://localhost:5050`. Kupe local/dev still uses `KUPE_BASE_URL` if you override; production SDKs default to `https://x.kupe.in`.
+Do **not** put `/v1` in `KUPE_BASE_URL`. Paths on this site are `{base}/v1/...`.
 
-Do **not** put `/v1` in `KUPE_BASE_URL`. Paths in this site are `{base}/v1/...`.
+## Headers (diff)
+
+```diff
+- GET https://api.kupe.in/api/v1/me
+- x-api-key: YOUR_APP_KEY
++ GET https://x.kupe.in/v1/me
++ Authorization: Bearer sk-kupe-YOUR_KEY
+```
 
 ## Auth header
 
-Milli accepted either:
+Kupe App accepted either `x-api-key: <opaque>` or a dashboard JWT.
 
-- **`x-api-key: <opaque>`** — server-generated `secrets.token_urlsafe(32)`, user-scoped, optional path-prefix ACLs.
-- **`Authorization: Bearer <Supabase JWT>`** — dashboard session.
-
-Kupe accepts a **single** header on every `/v1` route:
+Kupe Hub accepts one header on every `/v1` route:
 
 ```
 Authorization: Bearer sk-kupe-YOUR_KEY
@@ -30,16 +34,16 @@ Authorization: Bearer sk-kupe-YOUR_KEY
 
 Project keys start with `sk-kupe-` and are scoped to **one org and one project**. Hub sessions may send a Supabase user JWT instead (`auth: jwt` on `GET /v1/me`). Voice **clone / patch / delete** require JWT. See [Authentication](/auth).
 
-Milli keys are **not** valid on `x.kupe.in`. Create a new key in Hub: **project → API keys**.
+Kupe App keys are **not** valid on `x.kupe.in`. Create a new key in Hub: **project → API keys**.
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 curl https://api.kupe.in/api/v1/agents \
-  -H "x-api-key: YOUR_MILLI_KEY"
+  -H "x-api-key: YOUR_APP_KEY"
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl https://x.kupe.in/v1/me \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY"
 ```
@@ -62,10 +66,10 @@ const me = await new Kupe().me();
 
 ## Identity model
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | Almost everything is **user-scoped** (`request.state.user.id`) | API keys are **org + project**. Nested routes need `org_id` and often `project_id`. |
-| `GET /api/v1/me` returns the Milli profile / consent / org context | `GET /v1/me` returns `auth`, `org_id`, `project_id`, `user_id`, `api_key_id` |
+| `GET /api/v1/me` returns the Kupe App profile / consent / org context | `GET /v1/me` returns `auth`, `org_id`, `project_id`, `user_id`, `api_key_id` |
 | Org admin can act on other users via query `user_id` | Members are `GET/POST /v1/orgs/{org_id}/members`. Keys cannot impersonate another project. |
 | `POST /api/v1/api-keys` creates a user key | `POST /v1/projects/{project_id}/api-keys` |
 
@@ -78,12 +82,12 @@ curl https://x.kupe.in/v1/me \
 
 ## CORS and `create_call`
 
-Milli `POST /api/call/create_call` is on the auth **exclude** list (middleware skips JWT/`x-api-key`), then the handler resolves identity itself (`x-api-key` or Bearer) **and** rejects unknown `Origin` via `validate_origin`. Browser apps had to be on the CORS allow-list (`api.kupe.in` plus verified custom domains).
+Kupe App `POST /api/call/create_call` is on the auth **exclude** list (middleware skips JWT/`x-api-key`), then the handler resolves identity itself (`x-api-key` or Bearer) **and** rejects unknown `Origin` via `validate_origin`. Browser apps had to be on the CORS allow-list (`api.kupe.in` plus verified custom domains).
 
-Kupe outbound is a normal authenticated `/v1` route. Send the Bearer key; there is no Origin gate on the public API the way Milli implemented `create_call`.
+Kupe outbound is a normal authenticated `/v1` route. Send the Bearer key; there is no Origin gate on the public API the way Kupe App implemented `create_call`.
 
 ## Public vs provider webhooks
 
-Milli left telephony answer URLs unauthenticated on purpose (`/api/call/incoming_call`, `/api/call/plivo-incoming_call`, `/api/call/plivo-hangup`, Exotel/Elison variants). Kupe does the same for **provider** callbacks (`/v1/telephony/plivo/inbound`, `/v1/plivo/webhooks/ucc`, …). Those paths are **not** in the public OpenAPI and you should not call them from your app — Plivo/Twilio/Exotel call them.
+Kupe App left telephony answer URLs unauthenticated on purpose (`/api/call/incoming_call`, `/api/call/plivo-incoming_call`, `/api/call/plivo-hangup`, Exotel/Elison variants). Kupe does the same for **provider** callbacks (`/v1/telephony/plivo/inbound`, `/v1/plivo/webhooks/ucc`, …). Those paths are **not** in the public OpenAPI and you should not call them from your app — Plivo/Twilio/Exotel call them.
 
 Your app should only call documented `/v1/...` routes with a Bearer key.

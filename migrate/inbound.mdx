@@ -1,25 +1,25 @@
 ---
 title: Inbound deployments
-description: Milli phone-number mappings become inbound deployments with availability windows.
+description: Kupe App phone-number mappings become inbound deployments with availability windows.
 ---
 
-Milli inbound was a **mapping row**: agent (or workflow) + `phone_number_id` + optional webhook URL.
+Kupe App inbound was a **mapping row**: agent (or workflow) + `phone_number_id` + optional webhook URL.
 
 Kupe inbound is a **deployment**: agent + telephony account + name + status + **availability window**. Calls outside the window are not connected. Requires `feature_inbound`. See [Inbound](/guides/inbound).
 
 ## Create
 
-Milli `POST /api/v1/phone/mapping` body (`AgentPhoneMappingCreate`): `agent_id` **xor** `workflow_id`, `phone_number_id`, optional `webhook_url`, `config_source`, `user_id`.
+Kupe App `POST /api/v1/phone/mapping` body (`AgentPhoneMappingCreate`): `agent_id` **xor** `workflow_id`, `phone_number_id`, optional `webhook_url`, `config_source`, `user_id`.
 
-Kupe `POST /v1/inbound` requires `org_id`, `project_id`, `agent_id`, `telephony_account_id`, `name`. Optional `status` (`draft` | `active` | `paused`) and `availability`.
+Kupe Hub `POST /v1/inbound` requires `org_id`, `project_id`, `agent_id`, `telephony_account_id`, `name`. Optional `status` (`draft` | `active` | `paused`) and `availability`.
 
-There is **no** `workflow_id`. Milli `POST /api/v1/phone/mapping/workflow` has no replacement.
+There is **no** `workflow_id`. Kupe App `POST /api/v1/phone/mapping/workflow` has no replacement.
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 curl -X POST https://api.kupe.in/api/v1/phone/mapping \
-  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "x-api-key: YOUR_APP_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "agent_id": "UUID",
@@ -27,7 +27,7 @@ curl -X POST https://api.kupe.in/api/v1/phone/mapping \
   }'
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl -X POST https://x.kupe.in/v1/inbound \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
@@ -64,11 +64,11 @@ dep = client.inbound.create(
 
 </CodeGroup>
 
-`availability.always: true` (default) ignores days and hours. `days_of_week` is `0=Sun … 6=Sat`. Milli mappings had **no** hours window — that is new.
+`availability.always: true` (default) ignores days and hours. `days_of_week` is `0=Sun … 6=Sat`. Kupe App mappings had **no** hours window — that is new.
 
 ## List / patch / delete
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `GET /api/v1/phone/mapping` | `GET /v1/orgs/{org_id}/projects/{project_id}/inbound` |
 | `GET .../mapping/agent/{agent_id}` | List inbound and filter `agent_id` |

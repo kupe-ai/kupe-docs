@@ -1,0 +1,46 @@
+---
+title: Catalog agents
+description: Every mounted Kupe App path in this group (32 paths, 45 method+path pairs) and the Kupe Hub replacement.
+---
+
+Kupe App agent CRUD, nested config patches, post-analysis rules, TTS catalog, and provider lists. Narrative: [agents](/migrate/agents).
+
+**32 unique Kupe App paths** in this table (45 method+path pairs). Inventory is the live FastAPI app, not `api_specification.yaml`.
+
+## Path map
+
+| Kupe App | Methods | Kupe Hub | Notes |
+| --- | --- | --- | --- |
+| `/api/v1/agents` | GET, POST | `POST/GET /v1/orgs/:org_id/projects/:project_id/agents` | Flat `AgentBody`. List is paginated `items+total`. |
+| `/api/v1/agents/by-domain` | GET | No equivalent | Share-page custom domains. |
+| `/api/v1/agents/domain-available` | GET | No equivalent | Share-page custom domains. |
+| `/api/v1/agents/library` | GET | No equivalent | Template library was Kupe App-only. |
+| `/api/v1/agents/simple` | POST | Same `POST .../agents` | Pass `name` + `system_prompt`; no simple endpoint. |
+| `/api/v1/agents/stats` | GET | No equivalent | List agents and count. |
+| `/api/v1/agents/:agent_id` | GET, PUT, DELETE | `GET /v1/agents/:agent_id` · `PATCH /v1/agents/:agent_id` · archive instead of DELETE | `POST /v1/agents/:agent_id/archive`. |
+| `/api/v1/agents/:agent_id/clone` | POST | No clone route | `GET` then `POST` create. |
+| `/api/v1/agents/:agent_id/model-config` | PATCH | `PATCH /v1/agents/:agent_id` | Use `llm_id` / `stt_id` / `tts_id` / `config`. |
+| `/api/v1/agents/:agent_id/post-analysis` | GET, POST | `/v1/agents/:agent_id/post-call-analyses` | Also org-level `/v1/orgs/:org_id/post-call-analyses`. |
+| `/api/v1/agents/:agent_id/post-analysis/attached-rule-ids` | GET | `/v1/agents/:agent_id/post-call-analyses` | Also org-level `/v1/orgs/:org_id/post-call-analyses`. |
+| `/api/v1/agents/:agent_id/post-analysis/attached-rules` | GET, PUT | `/v1/agents/:agent_id/post-call-analyses` | Also org-level `/v1/orgs/:org_id/post-call-analyses`. |
+| `/api/v1/agents/:agent_id/search-tool` | POST, DELETE | `config.knowledge_base_ids` | Create a knowledge base, then patch the agent. |
+| `/api/v1/agents/:agent_id/share-info` | GET, PUT | No equivalent | Legacy public share page / branding upload. |
+| `/api/v1/agents/:agent_id/share-info/upload-branding` | POST | No equivalent | Legacy public share page / branding upload. |
+| `/api/v1/agents/:agent_id/tools` | GET, POST, PATCH | Org tools + `POST/DELETE /v1/agents/:agent_id/tools` | Tools are org-scoped first. |
+| `/api/v1/agents/:agent_id/tools/:tool_id` | DELETE | Org tools + `POST/DELETE /v1/agents/:agent_id/tools` | Tools are org-scoped first. |
+| `/api/v1/agents/:agent_id/transcriber-config` | PATCH | `PATCH /v1/agents/:agent_id` | Use `llm_id` / `stt_id` / `tts_id` / `config`. |
+| `/api/v1/agents/:agent_id/tts-config` | PATCH | `PATCH /v1/agents/:agent_id` | Use `llm_id` / `stt_id` / `tts_id` / `config`. |
+| `/api/v1/agents/:agent_id/vad-config` | PATCH | `PATCH /v1/agents/:agent_id` | Use `llm_id` / `stt_id` / `tts_id` / `config`. |
+| `/api/v1/post-analysis/rules` | GET, POST | `/v1/orgs/:org_id/post-call-analyses` (+ archive, tools) | Duplicate helper: no 1:1. |
+| `/api/v1/post-analysis/rules/:rule_id` | GET, PUT, DELETE | `/v1/orgs/:org_id/post-call-analyses` (+ archive, tools) | Duplicate helper: no 1:1. |
+| `/api/v1/post-analysis/rules/:rule_id/duplicate` | POST | `/v1/orgs/:org_id/post-call-analyses` (+ archive, tools) | Duplicate helper: no 1:1. |
+| `/api/v1/providers/all` | GET | `GET /v1/providers` | Single catalog; no VAD list. |
+| `/api/v1/providers/model` | GET | `GET /v1/providers` | Single catalog; no VAD list. |
+| `/api/v1/providers/stt` | GET | `GET /v1/providers` | Single catalog; no VAD list. |
+| `/api/v1/providers/tts` | GET | `GET /v1/providers` | Single catalog; no VAD list. |
+| `/api/v1/providers/vad` | GET | `GET /v1/providers` | Single catalog; no VAD list. |
+| `/api/v1/tts-voices` | GET, POST | `GET /v1/voices` · clone is `POST /v1/voices/clone` | Clone requires JWT. |
+| `/api/v1/tts-voices/provider/:provider_id` | GET | `GET /v1/voices?provider=` | Query `provider` or `provider_id`. |
+| `/api/v1/tts-voices/:voice_id` | GET | `GET /v1/voices` (no dedicated get-by-id in some clients) · patch/delete clone JWT routes | `GET/PATCH/DELETE /v1/voices/:voice_id` — delete/patch JWT. |
+| `/api/v1/tts-voices/:voice_id/sample` | GET | `GET /v1/voices/:voice_id/preview` |  |
+

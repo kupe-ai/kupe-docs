@@ -1,0 +1,58 @@
+---
+title: Catalog auth and orgs
+description: Every mounted Kupe App path in this group (44 paths, 49 method+path pairs) and the Kupe Hub replacement.
+---
+
+Project keys and Hub auth replace user keys and public signup APIs. Narrative: [orgs](/migrate/orgs).
+
+**44 unique Kupe App paths** in this table (49 method+path pairs). Inventory is the live FastAPI app, not `api_specification.yaml`.
+
+## Path map
+
+| Kupe App | Methods | Kupe Hub | Notes |
+| --- | --- | --- | --- |
+| `/api/v1/api-keys` | POST | `/v1/projects/:project_id/api-keys` | Bearer `sk-kupe-...`. |
+| `/api/v1/api-keys/exists` | POST | `/v1/projects/:project_id/api-keys` | Bearer `sk-kupe-...`. |
+| `/api/v1/api-keys/fetch` | GET | `/v1/projects/:project_id/api-keys` | Bearer `sk-kupe-...`. |
+| `/api/v1/api-keys/fetch/:user_id` | GET | `/v1/projects/:project_id/api-keys` | Bearer `sk-kupe-...`. |
+| `/api/v1/api-keys/:key_id` | PATCH, DELETE | `/v1/projects/:project_id/api-keys` | Bearer `sk-kupe-...`. |
+| `/api/v1/feature-flags/me` | GET | `GET /v1/feature-flags` · `GET /v1/orgs/:org_id/access` | Member: `.../members/:user_id/access`. |
+| `/api/v1/feature-flags/:user_id` | GET, PUT | `GET /v1/feature-flags` · `GET /v1/orgs/:org_id/access` | Member: `.../members/:user_id/access`. |
+| `/api/v1/me` | GET | `GET /v1/me` | Different body: `auth`, `org_id`, `project_id`. |
+| `/api/v1/me/consent` | POST | No equivalent |  |
+| `/api/v1/me/org-context` | GET | `GET /v1/me` + `GET /v1/orgs/:org_id` |  |
+| `/api/v1/me/users` | GET | `GET /v1/orgs/:org_id/members` |  |
+| `/api/v1/onboarding` | POST | No equivalent | Hub first-run. |
+| `/api/v1/onboarding/me` | GET | No equivalent | Hub first-run. |
+| `/api/v1/organizations` | GET, POST | `GET/POST /v1/orgs` |  |
+| `/api/v1/organizations/:org_id/billing/assign-credits` | POST | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/billing/credit-grants/:grant_id/expiry` | PATCH | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/billing/credit-grants/:grant_id/lock` | PATCH | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/billing/credit-grants/:user_id` | GET | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/billing/daily-stats` | GET | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/billing/member-credit-balances` | POST | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/billing/summary` | GET | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/billing/wallet-topup` | POST | Wallet + cost-summary + `POST /v1/orgs/:org_id/balance/adjust` (privileged) | Most Kupe App org billing admin is Hub/internal. |
+| `/api/v1/organizations/:org_id/branding` | PATCH | No equivalent |  |
+| `/api/v1/organizations/:org_id/branding/logo` | POST | No equivalent |  |
+| `/api/v1/organizations/:org_id/bulk-feature-flags` | GET, PUT | Per-member access routes | No bulk template PUT. |
+| `/api/v1/organizations/:org_id/custom-domains` | GET, POST | No equivalent | Custom domains are not public API. |
+| `/api/v1/organizations/:org_id/custom-domains/public-config` | GET | No equivalent | Custom domains are not public API. |
+| `/api/v1/organizations/:org_id/custom-domains/:domain_id` | DELETE | No equivalent | Custom domains are not public API. |
+| `/api/v1/organizations/:org_id/custom-domains/:domain_id/check` | POST | No equivalent | Custom domains are not public API. |
+| `/api/v1/organizations/:org_id/custom-domains/:domain_id/set-primary` | POST | No equivalent | Custom domains are not public API. |
+| `/api/v1/organizations/:org_id/detail` | GET | `GET /v1/orgs/:org_id` |  |
+| `/api/v1/organizations/:org_id/invites` | POST | `POST /v1/orgs/:org_id/members` | Invite semantics differ. |
+| `/api/v1/organizations/:org_id/users` | GET | `/v1/orgs/:org_id/members` |  |
+| `/api/v1/organizations/:org_id/users/:member_user_id` | GET | `/v1/orgs/:org_id/members` |  |
+| `/api/v1/organizations/:org_id/users/:member_user_id/org-role` | PATCH | `/v1/orgs/:org_id/members` |  |
+| `/api/v1/public/auth/forgot-password` | POST | Hub / Supabase hosted auth | Not the Kupe REST API. |
+| `/api/v1/public/auth/resend-confirmation` | POST | Hub / Supabase hosted auth | Not the Kupe REST API. |
+| `/api/v1/public/auth/signup` | POST | Hub / Supabase hosted auth | Not the Kupe REST API. |
+| `/api/v1/public/auth/verify` | GET | Hub / Supabase hosted auth | Not the Kupe REST API. |
+| `/api/v1/public/forex-convert` | GET | No equivalent | Use the marketing site / Hub. |
+| `/api/v1/public/organizations/login-by-slug/:slug` | GET | No equivalent | Custom-domain login preview. |
+| `/api/v1/public/pricing-calculator-options` | GET | No equivalent | Use the marketing site / Hub. |
+| `/api/v1/public/status` | GET | No equivalent as this JSON | `GET /health` only. |
+| `/api/v1/public/tenant-by-host` | GET | No equivalent | Custom-domain login preview. |
+

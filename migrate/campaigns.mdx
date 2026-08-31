@@ -1,32 +1,32 @@
 ---
 title: Campaigns, batches, and people
-description: Milli campaigns, batch-call, and people-groups become Kupe batches and recipient lists.
+description: Kupe App campaigns, batch-call, and people-groups become Kupe Hub batches and recipient lists.
 ---
 
-Milli had **two** outbound products that both wrote `call_batches`:
+Kupe App had **two** outbound products that both wrote `call_batches`:
 
 - `/api/v1/campaigns` — named campaign, attach people-groups, start/pause/resume/**stop**
 - `/api/v1/batch-call` — upload CSV/JSON, start by `batch_id`
 
-Kupe has **one**: `/v1/batches`, plus **recipient lists** instead of people-groups. See [Campaigns](/guides/campaigns).
+Kupe Hub has **one**: `/v1/batches`, plus **recipient lists** instead of people-groups. See [Campaigns](/guides/campaigns).
 
 Requires `feature_outbound` / `feature_batch_calls`.
 
 ## Create and start
 
-Milli `POST /api/v1/campaigns` body:
+Kupe App `POST /api/v1/campaigns` body:
 
 | Field | Notes |
 | --- | --- |
 | `batch_name` | Required |
 | `agent_id` xor `workflow_id` xor `call_flow_id` | Workflows/call-flows are gone |
-| `caller_phone_id` | Milli `phone_numbers.id` |
+| `caller_phone_id` | Kupe App `phone_numbers.id` |
 | `variable_names` | List of keys, values came from group rows |
 | `batch_size` | Concurrency-ish |
 | `max_retries` | Extra redials |
 | `status` | Default `not_started` |
 
-Kupe `POST /v1/batches`:
+Kupe Hub `POST /v1/batches`:
 
 | Field | Notes |
 | --- | --- |
@@ -36,15 +36,15 @@ Kupe `POST /v1/batches`:
 | `name` | Required |
 | `max_concurrent_calls` | Default `1` |
 | `retry_policy` | Object, not `max_retries` int |
-| `schedule` | Object (window), not Milli’s later patch |
+| `schedule` | Object (window), not Kupe App’s later patch |
 
 Status enum: `draft` → `running` → `paused` / `completed` / `cancelled`. Started campaigns **cannot be deleted** — `POST /v1/batches/{batch_id}/hide`.
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 curl -X POST https://api.kupe.in/api/v1/campaigns \
-  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "x-api-key: YOUR_APP_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "batch_name": "EMI reminders",
@@ -55,10 +55,10 @@ curl -X POST https://api.kupe.in/api/v1/campaigns \
   }'
 
 curl -X POST https://api.kupe.in/api/v1/campaigns/CAMPAIGN_UUID/start \
-  -H "x-api-key: YOUR_MILLI_KEY"
+  -H "x-api-key: YOUR_APP_KEY"
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl -X POST https://x.kupe.in/v1/batches \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
@@ -81,7 +81,7 @@ curl -X POST https://x.kupe.in/v1/batches/bat_.../start \
 
 ## Lifecycle
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `POST .../start` | `POST /v1/batches/{batch_id}/start` |
 | `POST .../pause` | `POST /v1/batches/{batch_id}/pause` |
@@ -92,15 +92,15 @@ curl -X POST https://x.kupe.in/v1/batches/bat_.../start \
 | `GET .../live-calls/stream` (SSE) | No public SSE |
 | `POST /api/v1/campaigns/status-callback` | Provider webhook; not for your app |
 | `PATCH` campaign | `PATCH /v1/batches/{batch_id}` + `POST .../schedule` |
-| `DELETE` campaign | Hide if already run: `POST .../hide`. Draft-only delete is not the Milli semantics. |
+| `DELETE` campaign | Hide if already run: `POST .../hide`. Draft-only delete is not the Kupe App semantics. |
 
 ## People groups → recipient lists
 
-Milli `/api/v1/people-groups` was a spreadsheet (columns + rows + CSV upload) that you **attached** to a campaign (`POST .../campaigns/{id}/groups`).
+Kupe App `/api/v1/people-groups` was a spreadsheet (columns + rows + CSV upload) that you **attached** to a campaign (`POST .../campaigns/{id}/groups`).
 
 Kupe recipient lists:
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `POST /api/v1/people-groups` | `POST /v1/recipient-lists` (`org_id`, `project_id`, `name`) |
 | Columns / rows CRUD | `POST /v1/recipient-lists/{list_id}/members` and `.../members:bulk` |
@@ -114,7 +114,7 @@ Member `variables` is a map on each contact, not a separate `variable_names` arr
 
 Treat this as the same Kupe batch object:
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `POST /batch-call/create` | `POST /v1/batches` |
 | `POST /batch-call/upload/{id}` (CSV) / `upload-json` / `data/upsert` | `contacts:bulk` |

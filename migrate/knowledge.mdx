@@ -1,9 +1,9 @@
 ---
 title: Knowledge, files, and databases
-description: Milli file uploads and call-structure pipelines become knowledge bases and call databases.
+description: Kupe App file uploads and call-structure pipelines become knowledge bases and call databases.
 ---
 
-Milli mixed RAG files, agent-file mappings, Chromadb search, and a **call-structure → populate → export** analytics pipeline.
+Kupe App mixed RAG files, agent-file mappings, Chromadb search, and a **call-structure → populate → export** analytics pipeline.
 
 Kupe splits that:
 
@@ -14,7 +14,7 @@ See [Databases](/guides/databases).
 
 ## Files → knowledge bases
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `POST /api/v1/files/upload` | Create a KB, then `POST /v1/orgs/{org_id}/projects/{project_id}/knowledge-bases/{kb_id}/files` (multipart) |
 | `GET /files/user/me` | `GET .../knowledge-bases/{kb_id}/files` |
@@ -23,11 +23,11 @@ See [Databases](/guides/databases).
 | `/api/v1/agent-files-mappings/*` | Set `config.knowledge_base_ids` on the agent (no mapping table API) |
 | `POST /api/v1/search/semantic` / `hybrid` | `POST .../knowledge-bases/{kb_id}/search` with `query` + `top_k` |
 
-Milli search routes were on the auth exclude list (unauthenticated). Kupe search requires Bearer and is scoped to a KB in your project.
+Kupe App search routes were on the auth exclude list (unauthenticated). Kupe search requires Bearer and is scoped to a KB in your project.
 
 ## Call structure → databases
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `/api/v1/call-structure/structures` CRUD | `POST /v1/orgs/{org_id}/projects/{project_id}/databases` with `fields` |
 | `WS /call-structure/schema-chat` | No equivalent |
@@ -40,6 +40,6 @@ Built-in database columns include `who_called`, `direction`, `started_at`, `dura
 
 ## Call flows
 
-Milli `/api/v1/call-flows` was a graph editor (nodes, edges, sessions).
+Kupe App `/api/v1/call-flows` was a graph editor (nodes, edges, sessions).
 
-Kupe agents may include `flow_definition` on **create/patch agent** (`AgentBody.flow_definition`). There is **no** standalone call-flow CRUD, node, or edge API. Treat Milli call-flow routes as **no 1:1**.
+Kupe agents may include `flow_definition` on **create/patch agent** (`AgentBody.flow_definition`). There is **no** standalone call-flow CRUD, node, or edge API. Treat Kupe App call-flow routes as **no 1:1**.

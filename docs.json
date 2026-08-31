@@ -43,6 +43,15 @@
       }
     }
   },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "claude",
+      "chatgpt",
+      "cursor"
+    ]
+  },
   "navbar": {
     "links": [
       {
@@ -125,6 +134,33 @@
         ]
       },
       {
+        "tab": "API reference",
+        "icon": "square-terminal",
+        "openapi": "openapi.yaml"
+      },
+      {
+        "tab": "SDKs",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "Python",
+            "icon": "braces",
+            "pages": [
+              "sdk/python/index",
+              "sdk/python/realtime"
+            ]
+          },
+          {
+            "group": "TypeScript",
+            "icon": "file-code",
+            "pages": [
+              "sdk/typescript/index",
+              "sdk/typescript/realtime"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Migrate",
         "icon": "unplug",
         "groups": [
@@ -158,46 +194,19 @@
             "pages": ["migrate/mcp"]
           },
           {
-            "group": "Complete Milli catalog",
+            "group": "Complete Kupe App catalog",
             "icon": "table",
             "pages": [
-              "migrate/catalog-agents",
-              "migrate/catalog-voice",
-              "migrate/catalog-phones",
-              "migrate/catalog-campaigns",
-              "migrate/catalog-tools",
-              "migrate/catalog-knowledge",
-              "migrate/catalog-logs",
-              "migrate/catalog-billing",
-              "migrate/catalog-auth",
-              "migrate/catalog-no-equivalent"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "icon": "square-terminal",
-        "openapi": "openapi.yaml"
-      },
-      {
-        "tab": "SDKs",
-        "icon": "code",
-        "groups": [
-          {
-            "group": "Python",
-            "icon": "braces",
-            "pages": [
-              "sdk/python/index",
-              "sdk/python/realtime"
-            ]
-          },
-          {
-            "group": "TypeScript",
-            "icon": "file-code",
-            "pages": [
-              "sdk/typescript/index",
-              "sdk/typescript/realtime"
+              "migrate/paths-agents",
+              "migrate/paths-voice",
+              "migrate/paths-phones",
+              "migrate/paths-campaigns",
+              "migrate/paths-tools",
+              "migrate/paths-knowledge",
+              "migrate/paths-logs",
+              "migrate/paths-billing",
+              "migrate/paths-auth",
+              "migrate/paths-no-equivalent"
             ]
           }
         ]

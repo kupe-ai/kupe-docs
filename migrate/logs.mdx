@@ -1,13 +1,13 @@
 ---
 title: Logs, sessions, and live calls
-description: Milli call-analytics and live-calls become session list, transcript, recording, and analysis routes.
+description: Kupe App call-analytics and live-calls become session list, transcript, recording, and analysis routes.
 ---
 
-Milli listed calls via `/api/v1/call-analytics` (export included) and `/api/v1/live-calls` (including an SSE stream).
+Kupe App listed calls via `/api/v1/call-analytics` (export included) and `/api/v1/live-calls` (including an SSE stream).
 
-Kupe has **sessions**. There is no separate “logs” product. See [Logs](/guides/logs).
+Kupe Hub has **sessions**. There is no separate “logs” product. See [Logs](/guides/logs).
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `GET /api/v1/call-analytics` | `GET /v1/orgs/{org_id}/sessions` |
 | `GET /api/v1/call-analytics/export` | Transcript + analysis per session; database [export](/guides/databases) for structured fields |

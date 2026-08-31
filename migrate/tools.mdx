@@ -1,15 +1,15 @@
 ---
 title: Tools, webhooks, and Composio
-description: Milli tool-endpoint-defs, MCP server defs, and agent webhooks become org tools plus attached agent tools.
+description: Kupe App tool-endpoint-defs, MCP server defs, and agent webhooks become org tools plus attached agent tools.
 ---
 
-Milli tools were **user-owned definitions** (`/tool-endpoint-defs`, `/tools-mcp-server-defs`) then mapped onto an agent. Agent **webhooks** were a second channel: outbound “start this call” and incoming “call ended”.
+Kupe App tools were **user-owned definitions** (`/tool-endpoint-defs`, `/tools-mcp-server-defs`) then mapped onto an agent. Agent **webhooks** were a second channel: outbound “start this call” and incoming “call ended”.
 
 Kupe tools are **org-owned**. Kinds: `custom_webhook`, `mcp`, `composio`. Attach with `POST /v1/agents/{agent_id}/tools`. See [Tools](/guides/tools).
 
 ## HTTP and MCP tools
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `POST /api/v1/tool-endpoint-defs` | `POST /v1/orgs/{org_id}/tools` with `kind: custom_webhook`, `http_url`, `http_method`, JSON Schema `parameters` |
 | `GET/PUT/DELETE /tool-endpoint-defs/{tool_id}` | `GET/PATCH /v1/tools/{tool_id}`, `POST /v1/tools/{tool_id}/archive` |
@@ -57,7 +57,7 @@ curl -X POST https://x.kupe.in/v1/orgs/org_.../tools \
 
 ## Agent start-call / hangup webhooks
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `PUT /api/v1/webhooks/agents/{agent_id}` | No per-agent webhook blob |
 | `POST .../outbound` (and legacy `.../incoming`) — CRM triggers a call | One-contact batch or MCP `trigger_outbound_call` |
@@ -66,7 +66,7 @@ curl -X POST https://x.kupe.in/v1/orgs/org_.../tools \
 
 ## Composio
 
-Milli used user-level connect URLs (`/api/v1/composio/connect`, `authorize-toolkit`, `wait-for-connection`, toolkit tool lists).
+Kupe App used user-level connect URLs (`/api/v1/composio/connect`, `authorize-toolkit`, `wait-for-connection`, toolkit tool lists).
 
 Kupe is **org-scoped**:
 
@@ -77,8 +77,8 @@ Kupe is **org-scoped**:
 - `DELETE /v1/composio/connections/{connection_id}`
 - `GET /v1/orgs/{org_id}/composio/tools`
 
-Nango (`/api/v1/nango/*`) is **not** on the Kupe public API. Use Composio or a custom webhook.
+Nango (`/api/v1/nango/*`) is **not** on the Kupe Hub public API. Use Composio or a custom webhook.
 
 ## MCP note
 
-Do not point Cursor at Milli. Use [Kupe MCP](/kupe-mcp): `http://mcp.kupe.in/mcp` with `Authorization: Bearer sk-kupe-...`. Tools such as `create_webhook_tool`, `create_mcp_tool`, and `list_org_tools` wrap these routes. Details: [Migrate MCP](/migrate/mcp).
+Do not point Cursor at Kupe App. Use [Kupe MCP](/kupe-mcp): `http://mcp.kupe.in/mcp` with `Authorization: Bearer sk-kupe-...`. Tools such as `create_webhook_tool`, `create_mcp_tool`, and `list_org_tools` wrap these routes. Details: [Migrate MCP](/migrate/mcp).

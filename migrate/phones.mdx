@@ -1,15 +1,15 @@
 ---
 title: Phones, KYC, and UCC
-description: Milli /api/v1/phone rows become telephony accounts. India KYC and UCC are first-class on Kupe.
+description: Kupe App /api/v1/phone rows become telephony accounts. India KYC and UCC are first-class on Kupe Hub.
 ---
 
-Milli stored numbers as `phone_numbers` rows (`/api/v1/phone`). Kupe stores **telephony accounts** (`tel_...`): either a Kupe-managed Plivo DID or BYOK (Twilio / Plivo / Exotel).
+Kupe App stored numbers as `phone_numbers` rows (`/api/v1/phone`). Kupe Hub stores **telephony accounts** (`tel_...`): either a Kupe-managed Plivo DID or BYOK (Twilio / Plivo / Exotel).
 
 See [Phones](/guides/phones), [India KYC](/guides/kyc), and [UCC](/guides/ucc).
 
 ## List / add / release
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `GET /api/v1/phone` | `GET /v1/orgs/{org_id}/telephony-accounts` |
 | `POST /api/v1/phone` (add existing number + credentials) | `POST /v1/orgs/{org_id}/telephony-accounts` — body: `provider`, `account_sid`, `api_key`, `from_number`, optional `exotel_subdomain`, `label`, `is_default` |
@@ -23,27 +23,27 @@ See [Phones](/guides/phones), [India KYC](/guides/kyc), and [UCC](/guides/ucc).
 
 ## Search and buy (Plivo)
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `GET /api/v1/phone/plivo/available-numbers` | `GET /v1/orgs/{org_id}/plivo/numbers/search?country_iso=IN\|US&pattern=` |
 | `POST /api/v1/phone/plivo/rent` | `POST /v1/orgs/{org_id}/plivo/numbers/purchase` `{ "number": "+91..." }` |
 | `GET /api/v1/phone/plivo/compliance-applications` | `GET /v1/orgs/{org_id}/plivo/compliance` + `.../requirements` |
 | `POST /api/v1/phone/{id}/compliance` (link packet to number) | KYC is **account-level** before India purchase, not a per-DID link |
-| Milli `/api/v1/compliance-applications` (platform review queue) | **Different product** — Kupe Plivo KYC is `POST /v1/orgs/{org_id}/plivo/compliance`. Document upload is **dashboard-only**. |
+| Kupe App `/api/v1/compliance-applications` (platform review queue) | **Different product** — Kupe Plivo KYC is `POST /v1/orgs/{org_id}/plivo/compliance`. Document upload is **dashboard-only**. |
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 curl "https://api.kupe.in/api/v1/phone/plivo/available-numbers?country_iso=IN" \
-  -H "x-api-key: YOUR_MILLI_KEY"
+  -H "x-api-key: YOUR_APP_KEY"
 
 curl -X POST https://api.kupe.in/api/v1/phone/plivo/rent \
-  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "x-api-key: YOUR_APP_KEY" \
   -H "Content-Type: application/json" \
   -d '{"number":"+9180..."}'
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl "https://x.kupe.in/v1/orgs/org_.../plivo/numbers/search?country_iso=IN&pattern=80" \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY"
 
@@ -59,7 +59,7 @@ US can be purchased immediately. **India requires an accepted compliance applica
 
 ## UCC
 
-Milli had **no** public UCC routes in the mounted API. Kupe adds org-level Plivo UCC:
+Kupe App had **no** public UCC routes in the mounted API. Kupe Hub adds org-level Plivo UCC:
 
 - `GET /v1/orgs/{org_id}/plivo/ucc`
 - `GET .../ucc/summary`

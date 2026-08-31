@@ -1,25 +1,54 @@
 ---
 title: Agents
-description: Nested Milli agent payloads become a flat Kupe AgentBody with config, versions, and archive instead of delete.
+description: Nested Kupe App agent payloads become a flat Kupe Hub AgentBody with config, versions, and archive instead of delete.
 ---
 
-Milli agents were a bundle of tables: `agent` row plus model / TTS / STT / VAD patches. Kupe stores one agent document: `name`, `system_prompt`, `greeting`, catalog ids, and `config`.
+Kupe App agents were a bundle of tables: `agent` row plus model / TTS / STT / VAD patches. Kupe Hub stores one agent document: `name`, `system_prompt`, `greeting`, catalog ids, and `config`.
 
 <Note>
-  Milli `DELETE /api/v1/agents/{agent_id}` hard-deleted. Kupe uses **`POST /v1/agents/{agent_id}/archive`**. There is no public hard-delete.
+  Kupe App `DELETE /api/v1/agents/{agent_id}` hard-deleted. Kupe Hub uses **`POST /v1/agents/{agent_id}/archive`**. There is no public hard-delete.
 </Note>
 
 ## Create
 
-Milli `POST /api/v1/agents` required a nested object. `POST /api/v1/agents/simple` only needed `name` + `description` and filled platform defaults.
+Kupe App `POST /api/v1/agents` required a nested object. `POST /api/v1/agents/simple` only needed `name` + `description` and filled platform defaults.
 
-Kupe has **one** create: `POST /v1/orgs/{org_id}/projects/{project_id}/agents`. `name` and `system_prompt` are required. There is no `description` field on `AgentBody` — put positioning in the [spoken prompt](/guides/prompting).
+Kupe Hub has **one** create: `POST /v1/orgs/{org_id}/projects/{project_id}/agents`. `name` and `system_prompt` are required. There is no `description` field on `AgentBody` — put positioning in the [spoken prompt](/guides/prompting).
+
+## Request body (diff)
+
+```diff
+- POST https://api.kupe.in/api/v1/agents
+- x-api-key: YOUR_APP_KEY
+- {
+-   "agent": { "name": "Priya", "first_response_message": "Hi..." },
+-   "agent_model_config": { "system_prompt": "...", "temperature": 0.7 },
+-   "tts_config": { "voice_name": "priya" },
+-   "transcriber_config": { "language": "en" }
+- }
++ POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../agents
++ Authorization: Bearer sk-kupe-YOUR_KEY
++ {
++   "name": "Priya",
++   "system_prompt": "...",
++   "greeting": "Hi...",
++   "tts_voice_id": "priya",
++   "config": { "timezone": "Asia/Kolkata", "llm": { "temperature": 0.7 } }
++ }
+```
+
+## Response (diff)
+
+```diff
+- { "agent": { "id": "<uuid>", ... }, "configurations": { ... } }
++ { "id": "agt_...", "name": "Priya", "system_prompt": "...", "config": { ... }, "version": 1 }
+```
 
 <CodeGroup>
 
-```bash Milli
+```bash Kupe App
 curl -X POST https://api.kupe.in/api/v1/agents \
-  -H "x-api-key: YOUR_MILLI_KEY" \
+  -H "x-api-key: YOUR_APP_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "agent": {
@@ -45,7 +74,7 @@ curl -X POST https://api.kupe.in/api/v1/agents \
   }'
 ```
 
-```bash Kupe
+```bash Kupe Hub
 curl -X POST https://x.kupe.in/v1/orgs/org_.../projects/prj_.../agents \
   -H "Authorization: Bearer sk-kupe-YOUR_KEY" \
   -H "Content-Type: application/json" \
@@ -78,11 +107,11 @@ agent = client.agents.create(
 
 </CodeGroup>
 
-Response: Milli returned `{ agent, configurations, validation_status }`. Kupe returns a single `AgentOut` (`id` like `agt_...`, `config`, `version`, …).
+Response: Kupe App returned `{ agent, configurations, validation_status }`. Kupe Hub returns a single `AgentOut` (`id` like `agt_...`, `config`, `version`, …).
 
 ## Field map
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `agent.name` | `name` (real first name) |
 | `agent.description` | No field — fold into `system_prompt` |
@@ -108,7 +137,7 @@ Response: Milli returned `{ agent, configurations, validation_status }`. Kupe re
 
 ## List / get / patch
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `GET /api/v1/agents` | `GET /v1/orgs/{org_id}/projects/{project_id}/agents` (`limit`/`offset`, `{ items, total }`) |
 | `GET /api/v1/agents/{id}` | `GET /v1/agents/{agent_id}` |
@@ -119,13 +148,13 @@ Response: Milli returned `{ agent, configurations, validation_status }`. Kupe re
 | `GET /api/v1/agents/by-domain` / `domain-available` / `share-info` | No equivalent (legacy share pages / custom agent domains) |
 | `POST .../clone` | No clone route — `GET` then `POST` create |
 
-Kupe adds **versions**: `POST /v1/agents/{agent_id}/commit`, `GET .../versions`, `POST .../revert/{version}`. Milli had no public version API.
+Kupe Hub adds **versions**: `POST /v1/agents/{agent_id}/commit`, `GET .../versions`, `POST .../revert/{version}`. Kupe App had no public version API.
 
 ## Tools and post-call analysis
 
-Milli attached tools by type (`endpoint` | `mcp_server`) on the agent, and had a separate post-analysis rule catalog.
+Kupe App attached tools by type (`endpoint` | `mcp_server`) on the agent, and had a separate post-analysis rule catalog.
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `GET/POST/PATCH /api/v1/agents/{id}/tools` | Tools live on the **org**. `POST /v1/orgs/{org_id}/tools`, then `POST /v1/agents/{agent_id}/tools` |
 | `DELETE .../tools/{tool_id}` | `DELETE /v1/agents/{agent_id}/tools/{tool_id}` |
@@ -134,7 +163,7 @@ Milli attached tools by type (`endpoint` | `mcp_server`) on the agent, and had a
 
 ## Providers and voices
 
-| Milli | Kupe |
+| Kupe App | Kupe Hub |
 | --- | --- |
 | `GET /api/v1/providers/all` + `/model` `/stt` `/tts` `/vad` | `GET /v1/providers` (STT / LLM / TTS catalogs, `defaults`. Brand names are Kupe-facing.) |
 | `GET /api/v1/tts-voices` | `GET /v1/voices` |
